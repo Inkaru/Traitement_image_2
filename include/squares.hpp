@@ -23,5 +23,6 @@ void findSquares( const Mat& image, vector<vector<Point> >& squares,  int thresh
 void drawSquares( Mat& image, const vector<Rect>& rectangles);
 void pruneSquares(vector<vector<Point> >& squares, vector<Rect>& rectangles, int dist = 2);
 void cropRectangles(string filename, const vector<Rect>& rectangles);
+void getIcons(string filename, const vector<Rect>& rectangles);
 
 #endif //PROJET_OPENCV_CMAKE_SQUARES_HPP

@@ -173,3 +173,46 @@ void cropRectangles(string filename, const vector<Rect> &rectangles) {
     }
 
 }
+
+void getIcons(string filename, const vector<Rect>& rectangles){
+    vector<int> lines;
+    vector<int> columns;
+    for(auto const &rect: rectangles){
+        bool linefound = false;
+        bool columnfound = false;
+        Point center = (rect.br() + rect.tl()) * 0.5;
+        for(auto const &line: lines){
+            if(abs(line - center.y) < 25){
+                linefound = true;
+                std::replace (lines.begin(), lines.end(), line, (line + center.y)/2);
+                break;
+            }
+        }
+        for(auto const &col: columns){
+            if(abs(col - center.x) < 25){
+                columnfound = true;
+                std::replace (columns.begin(), columns.end(), col, (col + center.x)/2);
+                break;
+            }
+        }
+
+        if(!linefound){
+            lines.emplace_back(center.y);
+        }
+
+        if(!columnfound){
+            columns.emplace_back(center.x);
+        }
+    }
+
+    cout << "Centres lignes : " << endl;
+    for(auto const &line: lines){
+        cout << line << endl;
+    }
+
+    cout << "Centres columns : " << endl;
+    for(auto const &col: columns){
+        cout << col << endl;
+    }
+
+}
