@@ -13,6 +13,7 @@
 #include <math.h>
 #include <string.h>
 
+#include "image_treatment.hpp"
 
 using namespace cv;
 using namespace std;

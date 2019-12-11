@@ -21,7 +21,6 @@ using namespace cv;
 
 int main (void) {
 
-
 // Squares detection
     vector<string> names;
     names.emplace_back("../00000.png");
@@ -36,8 +35,6 @@ int main (void) {
             cout << "Couldn't load " << names[i] << endl;
             continue;
         }
-        
-        Mat test = bina(image);
 
         findSquares(image, squares);
         cout << squares.size() << endl;
