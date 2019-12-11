@@ -3,11 +3,11 @@
 
 #include <iostream>
 using namespace std;
-using namespace cv;
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/xfeatures2d.hpp>
+using namespace cv;
 
 vector<std::vector<cv::KeyPoint>> keypoints;
 vector<Mat> descriptors;
