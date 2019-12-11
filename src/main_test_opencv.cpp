@@ -9,7 +9,7 @@
 
 #include <iostream>
 #include "squares.hpp"
-
+#include "image_treatment.hpp"
 using namespace std;
 
 #include "opencv2/imgproc.hpp"
@@ -21,11 +21,10 @@ using namespace cv;
 
 int main (void) {
 
+
+// Squares detection
     vector<string> names;
-
-    names.push_back("../00000.png");
-
-//    namedWindow( "oui", 1 );
+    names.emplace_back("../00000.png");
     vector<vector<Point>> squares;
     vector<Rect> rectangles;
 
@@ -37,12 +36,15 @@ int main (void) {
             cout << "Couldn't load " << names[i] << endl;
             continue;
         }
+        
+        Mat test = bina(image);
 
         findSquares(image, squares);
         cout << squares.size() << endl;
         pruneSquares(squares, rectangles);
         drawSquares(image, rectangles);
         imwrite( "out.png", image );
+        generateImages(names[i], rectangles);
         int c = waitKey();
         if( (char)c == 27 )
             break;

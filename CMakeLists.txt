@@ -13,7 +13,10 @@ add_executable(Projet_OpenCV_CMake
         src/histogram.cpp
         src/main_test_opencv.cpp
         include/squares.hpp
-        src/squares.cpp )
+        src/squares.cpp
+        include/image_treatment.hpp
+        src/image_treatment.cpp
+        )
 
 target_link_libraries(Projet_OpenCV_CMake ${OpenCV_LIBS})
 
