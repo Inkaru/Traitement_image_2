@@ -41,7 +41,7 @@ int main (void) {
         pruneSquares(squares, rectangles);
         drawSquares(image, rectangles);
         imwrite( "out.png", image );
-        generateImages(names[i], rectangles);
+        cropRectangles(names[i], rectangles);
         int c = waitKey();
         if( (char)c == 27 )
             break;

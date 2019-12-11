@@ -16,6 +16,8 @@ add_executable(Projet_OpenCV_CMake
         src/squares.cpp
         include/image_treatment.hpp
         src/image_treatment.cpp
+        include/sift_comparator.hpp
+        src/sift_comparator.cpp
         )
 
 target_link_libraries(Projet_OpenCV_CMake ${OpenCV_LIBS})

@@ -7,6 +7,6 @@ using namespace std;
 #include "opencv2/highgui.hpp"
 using namespace cv;
 
-Mat bina(const Mat& image);
+Mat binarize(const Mat& image);
 
 #endif

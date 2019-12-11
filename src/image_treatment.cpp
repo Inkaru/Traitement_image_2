@@ -1,6 +1,6 @@
 #include "image_treatment.hpp"
 
-Mat bina(const Mat& image) {
+Mat binarize(const Mat& image) {
 
     Size taille(image.cols, image.rows);
 

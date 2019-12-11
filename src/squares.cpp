@@ -60,7 +60,7 @@ void findSquares(const Mat &image, vector<vector<Point> > &squares, int thresh, 
 //                gray = gray0 >= (l + 1) * 255 / N;
 //            }
 
-            Mat imgBin = bina(image);
+            Mat imgBin = binarize(image);
 
             // find contours and store them all as a list
             findContours(imgBin, contours, RETR_LIST, CHAIN_APPROX_SIMPLE);
@@ -148,7 +148,7 @@ void drawSquares(Mat &image, const vector<Rect> &rectangles) {
     imshow("show me what you got", image);
 }
 
-void generateImages(string filename, const vector<Rect> &rectangles) {
+void cropRectangles(string filename, const vector<Rect> &rectangles) {
     int counter = 0;
     Mat image = imread(filename, 1);
     if (image.empty()) {
@@ -172,8 +172,4 @@ void generateImages(string filename, const vector<Rect> &rectangles) {
         }
     }
 
-}
-
-void deleteSquares(string filename, const vector<Rect>& rectangles, int margin){
-    
 }
