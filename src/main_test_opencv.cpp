@@ -21,11 +21,12 @@ using namespace cv;
 
 int main (void) {
 
+//    test();
 // Squares detection
     vector<string> names;
-    names.emplace_back("../00000.png");
+    names.emplace_back("../00000rotated.png");
     vector<vector<Point>> squares;
-    vector<Rect> rectangles;
+    vector<RotatedRect> rectangles;
 
     for( int i = 0; i < names.size(); i++ )
     {
@@ -40,9 +41,9 @@ int main (void) {
         cout << squares.size() << endl;
         pruneSquares(squares, rectangles);
         drawSquares(image, rectangles);
+        cropRectangles(image, rectangles);
         imwrite( "out.png", image );
-        getIcons(names[0], rectangles);
-        cropRectangles(names[i], rectangles);
+//        getIcons(names[0], rectangles);
         int c = waitKey();
         if( (char)c == 27 )
             break;

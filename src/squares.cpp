@@ -64,7 +64,10 @@ void findSquares(const Mat &image, vector<vector<Point> > &squares, int thresh, 
 
             // find contours and store them all as a list
             findContours(imgBin, contours, RETR_LIST, CHAIN_APPROX_SIMPLE);
-
+//            drawContours(imgBin, contours, -1, cv::Scalar(0, 255, 0),30, 8);
+//
+//            cv::namedWindow("contours", WINDOW_NORMAL);
+//            imshow("contours",imgBin);
             vector<Point> approx;
 
             // test each contour
@@ -101,76 +104,117 @@ void findSquares(const Mat &image, vector<vector<Point> > &squares, int thresh, 
 //    }
 }
 
-void pruneSquares(vector<vector<Point> > &squares, vector<Rect> &rectangles, int dist) {
+void pruneSquares(vector<vector<Point> > &squares, vector<RotatedRect> &rectangles, int dist) {
     vector<Rect> rectangles_tmp;
+    vector<RotatedRect> rot_rectangles_tmp;
+
     for (int i = 0; i < squares.size(); i++) {
         //Remove rectangles
         vector<Point> sq = squares[i];
-        int isItSq = abs((sq[2].y - sq[0].y) - (sq[2].x - sq[0].x));
+//        int isItSq = abs((sq[2].y - sq[0].y) - (sq[2].x - sq[0].x));
+        double isItSq = norm(Mat(sq[0]), Mat(sq[1])) - norm(Mat(sq[1]), Mat(sq[2]));
+
         if (isItSq < 20) {
 //            cout << "sq " << i << endl;
-            rectangles_tmp.emplace_back(Rect(sq[0], sq[2]));
+//            rectangles_tmp.emplace_back(Rect(sq[0], sq[2]));
+//            rot_rectangles_tmp.emplace_back(RotatedRect(sq[0], sq[1], sq[2]));
+                rot_rectangles_tmp.emplace_back(minAreaRect(sq));
         }
 //        cout << isItSq << " " << squares[i] << endl;
     }
 
-    rectangles = rectangles_tmp;
-    cout << "sq found : " << rectangles.size() << endl;
-    rectangles_tmp.clear();
+//    rectangles = rectangles_tmp;
+    rectangles = rot_rectangles_tmp;
+
+    cout << "sq found : " << rot_rectangles_tmp.size() << endl;
+    rot_rectangles_tmp.clear();
 
     for (auto const &rect1: rectangles) {
         bool found = false;
         for (auto const &rect2: rectangles_tmp) {
 //            if(rect2.contains(rect1.tl()) || rect2.contains(rect1.br())){
-            Point center = (rect1.br() + rect1.tl()) * 0.5;
+            Point center = rect1.center;
             if (center.inside(rect2)) {
                 found = true;
                 break;
             }
         }
         if (!found) {
-            rectangles_tmp.push_back(rect1);
+            rot_rectangles_tmp.push_back(rect1);
         }
     }
 
-    rectangles = rectangles_tmp;
+    rectangles = rot_rectangles_tmp;
     cout << "sq found after : " << rectangles.size() << endl;
 
 }
 
 // the function draws all the squares in the image
-void drawSquares(Mat &image, const vector<Rect> &rectangles) {
+void drawSquares(Mat &image, const vector<RotatedRect> &rectangles) {
 
     for (auto const &rect: rectangles) {
-        cv::rectangle(image, rect, cv::Scalar(0, 255, 0), 3, LINE_AA);
-    }
-
-    imshow("show me what you got", image);
-}
-
-void cropRectangles(string filename, const vector<Rect> &rectangles) {
-    int counter = 0;
-    Mat image = imread(filename, 1);
-    if (image.empty()) {
-        cout << "Couldn't load " << filename << endl;
-    } else {
-        for (auto const &rect: rectangles) {
-            cv::Mat crop = image(rect);
-//                imshow("crop" + to_string(counter), crop);
-            bool result = false;
-            try {
-                result = imwrite("../generated_images/" + to_string(counter) + ".png", crop);
-                counter++;
-            }
-            catch (const cv::Exception &ex) {
-                fprintf(stderr, "Exception converting image to PNG format: %s\n", ex.what());
-            }
-            if (result)
-                printf("Saved PNG file.\n");
-            else
-                printf("ERROR: Can't save PNG file.\n");
+//        cv::rectangle(image, rect, cv::Scalar(0, 255, 0), 3, LINE_AA);
+        for (int i = 0; i < 4; i++) {
+            Point2f vertices[4];
+            rect.points(vertices);
+            line(image, vertices[i], vertices[(i+1)%4], Scalar(0,255,0), 2);
         }
     }
+
+    cv::namedWindow("image", WINDOW_NORMAL);
+    imshow("image", image);
+}
+
+void cropRectangles(Mat& image, const vector<RotatedRect> &squares) {
+
+    // find the average angle of the squares
+    double angle = 90.0;
+    for (auto const &rect: squares) {
+        angle += rect.angle / squares.size();
+    }
+    cout << "Average angle : " << angle << endl;
+
+    int counter = 0;
+    // get rotation matrix for rotating the image around its center in pixel coordinates
+    cv::Point2f center((image.cols-1)/2.0, (image.rows-1)/2.0);
+    cv::Mat rot = cv::getRotationMatrix2D(center, angle, 1.0);
+    // determine bounding rectangle, center not relevant
+    cv::Rect2f bbox = cv::RotatedRect(cv::Point2f(), image.size(), angle).boundingRect2f();
+    // adjust transformation matrix
+    rot.at<double>(0,2) += bbox.width/2.0 - image.cols/2.0;
+    rot.at<double>(1,2) += bbox.height/2.0 - image.rows/2.0;
+
+    cv::Mat dst;
+    cv::warpAffine(image, dst, rot, bbox.size());
+    cv::namedWindow("rotated_im.png", WINDOW_NORMAL);
+    cv::imshow("rotated_im.png", dst);
+
+//    drawSquares(dst, squares);
+
+    vector<RotatedRect> rot_rectangles_tmp;
+    transform(squares, rot_rectangles_tmp, rot);
+    drawSquares(dst, rot_rectangles_tmp);
+
+
+
+//        for (auto const &rect: squares) {
+//            cv::Mat crop = image(rect);
+////                imshow("crop" + to_string(counter), crop);
+//            bool result = false;
+//            try {
+//                result = imwrite("../generated_images/" + to_string(counter) + ".png", crop);
+//                counter++;
+//            }
+//            catch (const cv::Exception &ex) {
+//                fprintf(stderr, "Exception converting image to PNG format: %s\n", ex.what());
+//            }
+//            if (result)
+//                printf("Saved PNG file.\n");
+//            else
+//                printf("ERROR: Can't save PNG file.\n");
+//        }
+//    }
+
 
 }
 
@@ -188,6 +232,10 @@ void getIcons(string filename, const vector<Rect>& rectangles){
                 break;
             }
         }
+        if(!linefound){
+            lines.emplace_back(center.y);
+        }
+
         for(auto const &col: columns){
             if(abs(col - center.x) < 25){
                 columnfound = true;
@@ -195,11 +243,6 @@ void getIcons(string filename, const vector<Rect>& rectangles){
                 break;
             }
         }
-
-        if(!linefound){
-            lines.emplace_back(center.y);
-        }
-
         if(!columnfound){
             columns.emplace_back(center.x);
         }
@@ -216,3 +259,5 @@ void getIcons(string filename, const vector<Rect>& rectangles){
     }
 
 }
+
+
