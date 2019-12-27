@@ -12,6 +12,7 @@
 #include <iostream>
 #include <math.h>
 #include <string.h>
+#include <algorithm>
 
 #include "image_treatment.hpp"
 
@@ -20,9 +21,11 @@ using namespace std;
 
 double angle( Point pt1, Point pt2, Point pt0 );
 void findSquares( const Mat& image, vector<vector<Point> >& squares,  int thresh = 50, int N = 5 );
-void drawSquares( Mat& image, const vector<RotatedRect>& rectangles);
-void pruneSquares(vector<vector<Point> >& squares, vector<RotatedRect>& rectangles, int dist = 2);
-void cropRectangles(Mat& image, const vector<RotatedRect>& rectangles);
-void getIcons(string filename, const vector<Rect>& rectangles);
+void drawSquares(Mat &image, const vector<Rect> &rectangles);
+void pruneSquares(vector<vector<Point> > &squares, vector<Rect> &rectangles, int dist = 2);
+void cropRectangles(const Mat& image, const vector<Rect> &rectangles);
+void getIcons(Mat& image, const vector<Rect> &rectangles);
+void uprightImage(const Mat& image, Mat& dst);
+
 
 #endif //PROJET_OPENCV_CMAKE_SQUARES_HPP

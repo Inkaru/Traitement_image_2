@@ -18,36 +18,51 @@ using namespace cv;
 
 #include "histogram.hpp"
 
-
 int main (void) {
 
-//    test();
-// Squares detection
-    vector<string> names;
-    names.emplace_back("../00000rotated.png");
-    vector<vector<Point>> squares;
-    vector<RotatedRect> rectangles;
+////    test();
+//// Squares detection
+//    vector<string> names;
+//    names.emplace_back("../00000rotated.png");
+//    vector<vector<Point>> squares;
+//    vector<RotatedRect> rectangles;
+//
+//    for( int i = 0; i < names.size(); i++ )
+//    {
+//        Mat image = imread(names[i], 1);
+//        if( image.empty() )
+//        {
+//            cout << "Couldn't load " << names[i] << endl;
+//            continue;
+//        }
+//
+//        findSquares(image, squares);
+//        cout << squares.size() << endl;
+//        pruneSquares(squares, rectangles);
+//        drawSquares(image, rectangles);
+//        cropRectangles(image, rectangles);
+//        imwrite( "out.png", image );
+////        getIcons(names[0], rectangles);
+//        int c = waitKey();
+//        if( (char)c == 27 )
+//            break;
+//    }
 
-    for( int i = 0; i < names.size(); i++ )
-    {
-        Mat image = imread(names[i], 1);
-        if( image.empty() )
-        {
-            cout << "Couldn't load " << names[i] << endl;
-            continue;
-        }
+    Mat image = imread("../00000rotated.png", 1);
+    Mat dst;
 
-        findSquares(image, squares);
-        cout << squares.size() << endl;
-        pruneSquares(squares, rectangles);
-        drawSquares(image, rectangles);
-        cropRectangles(image, rectangles);
-        imwrite( "out.png", image );
-//        getIcons(names[0], rectangles);
-        int c = waitKey();
-        if( (char)c == 27 )
-            break;
-    }
-	
+    uprightImage(image, dst);
+
+    vector<vector<Point>> rect;
+    vector<Rect> sq;
+
+    findSquares(dst,rect);
+    pruneSquares(rect,sq);
+//    drawSquares(dst,sq);
+//    cropRectangles(dst,sq);
+    getIcons(dst,sq);
+
+    int c = waitKey();
+
 	return EXIT_SUCCESS;
 }
