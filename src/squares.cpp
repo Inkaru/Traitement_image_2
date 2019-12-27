@@ -130,13 +130,13 @@ void cropRectangles(const Mat& image, const vector<Rect> &rectangles) {
     }
 }
 
-void getIcons(Mat& image, const vector<Rect> &rectangles) {
+void getIcons(Mat& image, const vector<Rect> &rectangles, vector<Rect> &icons) {
     vector<int> lines;
     vector<int> columns;
     for (auto const &rect: rectangles) {
         bool linefound = false;
         bool columnfound = false;
-        Point center = (rect.br() + rect.tl()) * 0.5;
+        Point center = rect.tl();
         for (auto const &line: lines) {
             if (abs(line - center.y) < 25) {
                 linefound = true;
@@ -164,20 +164,35 @@ void getIcons(Mat& image, const vector<Rect> &rectangles) {
     int rows = image.rows;
     int lineThickness = 2;
 
-    cout << "Centres lignes : " << endl;
-    for (auto const &line: lines) {
-        cout << line << endl;
-        cv::line(image, Point(0,line), Point(cols,line), (0,255,0), lineThickness);
+    // debug : affichage des lignes et colonnes
+//    cout << "Centres lignes : " << endl;
+//    for (auto const &line: lines) {
+//        cout << line << endl;
+//        cv::line(image, Point(0,line), Point(cols,line), (0,255,0), lineThickness);
+//    }
+//
+//    cout << "Centres columns : " << endl;
+//    for (auto const &col: columns) {
+//        cout << col << endl;
+//        cv::line(image, Point(col,0), Point(col,rows), (0,255,0), lineThickness);
+//    }
+
+    // todo : tester si l'alignement marche sur différentes images
+    // calcul de la posistion des icones
+    sort(columns.begin(), columns.end());
+    int icon_col = int(1.95 * columns[0] - columns[1]);
+//    cv::line(image, Point(icon_col,0), Point(icon_col,rows), (0,255,0), lineThickness);
+
+    auto size = rectangles[0].size();
+    for (auto const &l : lines){
+        icons.emplace_back(Rect(Point(icon_col,l), size));
     }
 
-    cout << "Centres columns : " << endl;
-    for (auto const &col: columns) {
-        cout << col << endl;
-        cv::line(image, Point(col,0), Point(col,rows), (0,255,0), lineThickness);
-    }
+    // debug : affichage des boites autour des icones
+//    drawSquares(image, icons);
 
-    cv::namedWindow("lines detection", WINDOW_NORMAL);
-    imshow("lines detection", image);
+//    cv::namedWindow("lines detection", WINDOW_NORMAL);
+//    imshow("lines detection", image);
 
 }
 

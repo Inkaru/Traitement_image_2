@@ -55,12 +55,13 @@ int main (void) {
 
     vector<vector<Point>> rect;
     vector<Rect> sq;
+    vector<Rect> icons;
 
     findSquares(dst,rect);
     pruneSquares(rect,sq);
 //    drawSquares(dst,sq);
 //    cropRectangles(dst,sq);
-    getIcons(dst,sq);
+    getIcons(dst,sq, icons);
 
     int c = waitKey();
 
