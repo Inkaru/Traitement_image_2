@@ -2,40 +2,50 @@
 #include "opencv2/imgproc.hpp"
 #include "opencv2/highgui.hpp"
 
+/**
+ * @brief Init the sift detector with reference icons
+ */
+void initIcons(vector<vector<KeyPoint>>& keypoints, vector<Mat>& descriptors, vector<String>& names){
+    // Create SIFT detector
+    Ptr<xfeatures2d::SIFT> detector = xfeatures2d::SIFT::create();
 
-
-void initIcons(vector<String> names){
-    Ptr<cv::xfeatures2d::SIFT> detector = cv::xfeatures2d::SIFT::create();
-    for(auto const &name: names){
-        String path = "../sample/icons/"+name+".png";
+    // Parse icons
+    for(int i = 0; i<7; i++){
+        String path = "../generated_images/r" + to_string(i) + ".png";
         Mat mat = imread(path);
 
-        std::vector<cv::KeyPoint> keypoint;
-        detector->detect(mat, keypoint);
-        Mat output;
-        detector->compute(mat, keypoint, output);
+        vector<KeyPoint> keypoint; // Keypoints of the current icon
+        detector->detect(mat, keypoint); // Detect keypoints
+        Mat descriptor; // Descriptor of the current icon
+        detector->compute(mat, keypoint, descriptor); // Compute descriptor according to the keypoints and icon
 
-        keypoints.push_back(keypoint);
-        descriptors.push_back(output);
-        names.push_back(name);
+        keypoints.push_back(keypoint); //todo : remove, possibly useless
+        descriptors.push_back(descriptor);
+        names.push_back("r" + to_string(i));
     }
 }
 
-String identifyIcon(const Mat& img){
-    Ptr<cv::xfeatures2d::SIFT> detector = cv::xfeatures2d::SIFT::create();
-    Ptr<DescriptorMatcher> matcher = DescriptorMatcher::create(DescriptorMatcher::FLANNBASED);
-    std::vector< std::vector<DMatch> > knn_matches;
-
-    //Read image keypoints
-    std::vector<cv::KeyPoint> keypoint;
+/**
+ * @brief Find the icon matching the best a given image
+ * @param img The image to recognize
+ * @return Name of the closest reference icon
+ */
+String identifyIcon(const Mat& img, vector<Mat>& descriptors, vector<String>& names){
+    // Detect keypoints and compute current tested image descriptor
+    Ptr<xfeatures2d::SIFT> detector = xfeatures2d::SIFT::create();
+    vector<KeyPoint> keypoint;
     detector->detect(img, keypoint);
-    Mat output;
-    detector->compute(img, keypoint, output);
+    Mat descriptor;
+    detector->compute(img, keypoint, descriptor);
+
+    // Init matching tools
+    Ptr<DescriptorMatcher> matcher = DescriptorMatcher::create(DescriptorMatcher::FLANNBASED);
+    vector<vector<DMatch>> knn_matches; //
 
     int scores = 0;
     String highest_score_name = "";
-    for(int i = 0; i<14; i++){
-        matcher->knnMatch( output, descriptors[i], knn_matches, 2 );
+    for(size_t i = 0; i < descriptors.size(); i++){ // Compare on all reference icons
+        matcher->knnMatch(descriptor, descriptors[i], knn_matches, 2);
         
         const float ratio_thresh = 0.7f;
         std::vector<DMatch> good_matches;

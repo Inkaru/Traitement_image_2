@@ -31,8 +31,8 @@ void findSquares(const Mat &image, vector<vector<Point> > &squares, int thresh, 
     findContours(imgBin, contours, RETR_LIST, CHAIN_APPROX_SIMPLE);
     vector<Point> approx;
     /*
-    drawContours(imgBin, contours, -1, cv::Scalar(0, 255, 0),30, 8);
-    cv::namedWindow("contours", WINDOW_NORMAL);
+    drawContours(imgBin, contours, -1, Scalar(0, 255, 0),30, 8);
+    namedWindow("contours", WINDOW_NORMAL);
     imshow("contours",imgBin);
     */
 
@@ -108,10 +108,10 @@ void pruneSquares(vector<vector<Point>> &rectangles, vector<Rect> &squares, int 
  */
 void drawSquares(Mat &image, const vector<Rect> &rectangles) {
     for (auto const &rect: rectangles) {
-        cv::rectangle(image, rect, cv::Scalar(0, 255, 0), 3, LINE_AA);
+        rectangle(image, rect, Scalar(0, 255, 0), 3, LINE_AA);
     }
 
-    cv::namedWindow("Square detection", WINDOW_NORMAL);
+    namedWindow("Square detection", WINDOW_NORMAL);
     imshow("Square detection", image);
 }
 
@@ -125,95 +125,117 @@ void cropRectangles(const Mat& image, const vector<Rect> &rectangles) {
 
     cout << "Start crop operation : " << endl;
     for (auto const &rect: rectangles) {
-        cv::Mat crop = image(rect);
+        Mat crop = image(rect);
         //imshow("Cropped image n°" + to_string(counter), crop);
         bool result = false;
         try {
             result = imwrite("../generated_images/" + to_string(counter) + ".png", crop);
             counter++;
         }
-        catch (const cv::Exception &ex) {
+        catch (const Exception &ex) {
             fprintf(stderr, "Exception converting image to PNG format: %s\n", ex.what());
         }
         if (result){
-            cout << "Saved PNG file n°" << to_string(counter) << endl;
+            cout << "Saved PNG file n°" << to_string(counter-1) << endl;
         } else {
-            cout << "ERROR: Can't save PNG file. (Image n°" << to_string(counter) << ")" << endl;
+            cout << "ERROR: Can't save PNG file. (Image n°" << to_string(counter-1) << ")" << endl;
         }
     }
 }
 
 /**
- * @brief ?
- * @param image The given images
+ * @brief Extract reference icons of a given list of squares and an image
+ * @param image The given image
  * @param rectangles The list of squares
- * @param icons The list of squares corresponding to the icons
+ * @param icons The list of squares corresponding to the reference icons
  */
 void getIcons(Mat& image, const vector<Rect> &rectangles, vector<Rect> &icons) {
+    cout << "Retrieving reference icons : " << endl;
     vector<int> lines;
     vector<int> columns;
     for (auto const &rect: rectangles) {
         bool linefound = false;
         bool columnfound = false;
-        Point center = rect.tl();
-        for (auto const &line: lines) {
+        Point center = rect.tl(); //Top-left corner
+        for (auto const &line: lines) { // Line already registered -> correction by averaging
             if (abs(line - center.y) < 25) {
                 linefound = true;
-                std::replace(lines.begin(), lines.end(), line, (line + center.y) / 2);
+                //std::replace(lines.begin(), lines.end(), line, (line + center.y) / 2);
                 break;
             }
         }
-        if (!linefound) {
+        if (!linefound) { // New line -> add to the list
             lines.emplace_back(center.y);
         }
 
         for (auto const &col: columns) {
-            if (abs(col - center.x) < 25) {
+            if (abs(col - center.x) < 25) { // Column already registered -> correction by averaging
                 columnfound = true;
                 std::replace(columns.begin(), columns.end(), col, (col + center.x) / 2);
                 break;
             }
         }
-        if (!columnfound) {
+        if (!columnfound) { // New column -> add to the list
             columns.emplace_back(center.x);
         }
     }
 
+    /*
+    // Debug : affichage des lignes et colonnes
     int cols = image.cols;
     int rows = image.rows;
     int lineThickness = 2;
 
-    /*
-    // Debug : affichage des lignes et colonnes
-    cout << "Centres lignes : " << endl;
+    cout << "Centres lignes : " << lines.size() << endl;
     for (auto const &line: lines) {
-        cout << line << endl;
-        cv::line(image, Point(0,line), Point(cols,line), (0,255,0), lineThickness);
+        cout << line << " ";
+        line(image, Point(0,line), Point(cols,line), (0,0,255), lineThickness);
     }
+    cout << endl;
 
-    cout << "Centres columns : " << endl;
+    cout << "Centres columns : " << columns.size() << endl;
     for (auto const &col: columns) {
-        cout << col << endl;
-        cv::line(image, Point(col,0), Point(col,rows), (0,255,0), lineThickness);
+        cout << col << " ";
+        line(image, Point(col,0), Point(col,rows), (0,255,255), lineThickness);
     }
+    cout << endl;
     */
 
     // todo : tester si l'alignement marche sur différentes images
     // Calcul de la position des icones
     sort(columns.begin(), columns.end());
-    int icon_col = int(1.95 * columns[0] - columns[1]);
-    //cv::line(image, Point(icon_col,0), Point(icon_col,rows), (0,255,0), lineThickness);
+    int icon_col = int(0.9 * (columns[0] - fabs(columns[0] - columns[1])));
 
     auto size = rectangles[0].size();
     for (auto const &l : lines){
         icons.emplace_back(Rect(Point(icon_col,l), size));
     }
 
+    cout << "Total icons : " << icons.size() << endl;
+    int counter = 0;
+    for (auto const &rect: icons){
+        bool result;
+        Mat crop = image(rect);
+        try {
+            result = imwrite("../generated_images/r" + to_string(counter) + ".png", crop);
+            counter++;
+        }
+        catch (const Exception &ex) {
+            fprintf(stderr, "Exception converting image to PNG format: %s\n", ex.what());
+        }
+        if (result){
+            cout << "Saved PNG file n°" << to_string(counter-1) << endl;
+        } else {
+            cout << "ERROR: Can't save PNG file. (Image n°" << to_string(counter-1) << ")" << endl;
+        }
+    }
+
     /*
     // Debug : affichage des boites autour des icones
+    line(image, Point(icon_col,0), Point(icon_col,rows), (255, 0, 0), 5);
     drawSquares(image, icons);
-    cv::namedWindow("lines detection", WINDOW_NORMAL);
-    imshow("lines detection", image);
+    namedWindow("Lines detection", WINDOW_NORMAL);
+    imshow("Lines detection", image);
     */
 }
 
@@ -237,10 +259,10 @@ void uprightImage(const Mat &image, Mat &uprImage) {
         Point2f vertices[4];
         rect.points(vertices);
         for(int i = 0; i<4; i++) {
-            cv::line(image, vertices[i], vertices[(i+1)%4], cv::Scalar(0, 255, 0), 3, LINE_AA);
+            line(image, vertices[i], vertices[(i+1)%4], Scalar(0, 255, 0), 3, LINE_AA);
         }
     }
-    cv::namedWindow("Rotated square detection", WINDOW_NORMAL);
+    namedWindow("Rotated square detection", WINDOW_NORMAL);
     imshow("Rotated square detection", image);
 
     double angle = 90.0;
@@ -255,18 +277,18 @@ void uprightImage(const Mat &image, Mat &uprImage) {
 
     if(!isUpright) {
         // Get rotation matrix for rotating the image around its center in pixel coordinates
-        cv::Point2f center((image.cols - 1) / 2.0, (image.rows - 1) / 2.0);
-        cv::Mat rot = cv::getRotationMatrix2D(center, angle, 1.0);
+        Point2f center((image.cols - 1) / 2.0, (image.rows - 1) / 2.0);
+        Mat rot = getRotationMatrix2D(center, angle, 1.0);
         // Determine bounding rectangle, center is not relevant
-        cv::Rect2f bbox = cv::RotatedRect(cv::Point2f(), image.size(), angle).boundingRect2f();
+        Rect2f bbox = RotatedRect(Point2f(), image.size(), angle).boundingRect2f();
         // Adjust transformation matrix
         rot.at<double>(0, 2) += bbox.width / 2.0 - image.cols / 2.0;
         rot.at<double>(1, 2) += bbox.height / 2.0 - image.rows / 2.0;
 
         // Apply transformations to obtain upright image
-        cv::warpAffine(image, uprImage, rot, bbox.size());
-        cv::namedWindow("Upright image", WINDOW_NORMAL);
-        cv::imshow("Upright image", uprImage);
+        warpAffine(image, uprImage, rot, bbox.size());
+        namedWindow("Upright image", WINDOW_NORMAL);
+        imshow("Upright image", uprImage);
     } else {
         uprImage = image;
     }
