@@ -1,69 +1,74 @@
 //////////////////////////////////////////////////////////////////////////
 // Option Images
-// Projet, séance 1
-// thème : premier pas en OpenCV
-// contenu : charge, affiche, réduction, calcul et affichage d'histogramme
-// version : 17.1128
+// Projet
+// Theme : reconnaisance d'icone avec opencv
+// contenu : charge, traite, recadre, reconnait les cadres d'icone et découpe.
+// version : alpha 0.1
 //////////////////////////////////////////////////////////////////////////
 
 
 #include <iostream>
 #include "squares.hpp"
-#include "image_treatment.hpp"
 using namespace std;
 
 #include "opencv2/imgproc.hpp"
 #include "opencv2/highgui.hpp"
 using namespace cv;
 
-#include "histogram.hpp"
-
 int main (void) {
+    //Init vector of images, squares and rectangles
+    vector<string> names;
+    names.emplace_back("../00000.png");
+    names.emplace_back("../00000rotated.png");
+    vector<vector<Point>> squares;
+    vector<Rect> rectangles;
 
-////    test();
-//// Squares detection
-//    vector<string> names;
-//    names.emplace_back("../00000rotated.png");
-//    vector<vector<Point>> squares;
-//    vector<RotatedRect> rectangles;
-//
-//    for( int i = 0; i < names.size(); i++ )
-//    {
-//        Mat image = imread(names[i], 1);
-//        if( image.empty() )
-//        {
-//            cout << "Couldn't load " << names[i] << endl;
-//            continue;
-//        }
-//
-//        findSquares(image, squares);
-//        cout << squares.size() << endl;
-//        pruneSquares(squares, rectangles);
-//        drawSquares(image, rectangles);
-//        cropRectangles(image, rectangles);
-//        imwrite( "out.png", image );
-////        getIcons(names[0], rectangles);
-//        int c = waitKey();
-//        if( (char)c == 27 )
-//            break;
-//    }
+    for( int i = 0; i < names.size(); i++ )
+    {
+        cout << "Process image " << names[i] << endl;
+        Mat image = imread(names[i], 1);
+        if(image.empty())
+        {
+            cout << "Couldn't load " << names[i] << endl;
+            continue;
+        }
+        //Set upright if necessary
+        Mat uprImage;
+        uprightImage(image, uprImage);
+        //Detect all squares
+        findSquares(uprImage, squares);
+        //Remove useless squares
+        pruneSquares(squares, rectangles);
+        //Draw remaining squares on the image
+        drawSquares(uprImage, rectangles);
+        imwrite( "out.png", uprImage );
+        //Generate images of remaining squares
+        cropRectangles(uprImage, rectangles);
 
+        int c = waitKey();
+        if((char)c == 27) {
+            break;
+        }
+    }
+
+ /*
+    //TEST ROTATED IMAGE
     Mat image = imread("../00000rotated.png", 1);
     Mat dst;
 
     uprightImage(image, dst);
 
-    vector<vector<Point>> rect;
-    vector<Rect> sq;
+    vector<vector<Point>> initialSquares;
+    vector<Rect> prunedSquares;
     vector<Rect> icons;
 
-    findSquares(dst,rect);
-    pruneSquares(rect,sq);
-//    drawSquares(dst,sq);
-//    cropRectangles(dst,sq);
-    getIcons(dst,sq, icons);
+    findSquares(dst, initialSquares);
+    pruneSquares(initialSquares, prunedSquares);
+    drawSquares(dst,prunedSquares);
+    cropRectangles(dst,prunedSquares);
+    getIcons(dst, prunedSquares, icons);
+*/
 
     int c = waitKey();
-
 	return EXIT_SUCCESS;
 }
