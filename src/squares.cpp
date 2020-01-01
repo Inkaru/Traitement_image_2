@@ -120,8 +120,9 @@ void drawSquares(Mat &image, const vector<Rect> &rectangles) {
  * @param image The image from which icon images will be extracted
  * @param rectangles The list of squares
  */
-void cropRectangles(const Mat& image, const vector<Rect> &rectangles) {
+void cropRectangles(const Mat& image, const vector<Rect> &rectangles, const string& filename) {
     int counter = 0;
+    int modulo;
 
     cout << "Start crop operation : " << endl;
     for (auto const &rect: rectangles) {
@@ -129,7 +130,8 @@ void cropRectangles(const Mat& image, const vector<Rect> &rectangles) {
         //imshow("Cropped image n°" + to_string(counter), crop);
         bool result = false;
         try {
-            result = imwrite("../generated_images/" + to_string(counter) + ".png", crop);
+            modulo = counter % 5;
+            result = imwrite(filename + "_" + to_string(counter/5) + "_" + to_string(modulo) + ".png", crop);
             counter++;
         }
         catch (const Exception &ex) {
