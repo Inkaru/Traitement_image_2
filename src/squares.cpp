@@ -257,24 +257,33 @@ void uprightImage(const Mat &image, Mat &uprImage) {
     }
 
     /*/////////////////*/
-    for (auto const &rect: squares) {
-        Point2f vertices[4];
-        rect.points(vertices);
-        for(int i = 0; i<4; i++) {
-            line(image, vertices[i], vertices[(i+1)%4], Scalar(0, 255, 0), 3, LINE_AA);
-        }
-    }
-    namedWindow("Rotated square detection", WINDOW_NORMAL);
-    imshow("Rotated square detection", image);
+//    for (auto const &rect: squares) {
+//        Point2f vertices[4];
+//        rect.points(vertices);
+//        for(int i = 0; i<4; i++) {
+//            line(image, vertices[i], vertices[(i+1)%4], Scalar(0, 255, 0), 3, LINE_AA);
+//        }
+//    }
+//    namedWindow("Rotated square detection", WINDOW_NORMAL);
+//    imshow("Rotated square detection", image);
 
+    // NEW : needs testing if the first icon contains a square
     double angle = 90.0;
     double isUpright = true;
-    for (auto const &rect: squares) {
-        angle += rect.angle / squares.size();
-        if(fabs(rect.angle) > 1 && fabs(fabs(rect.angle) - 90) > 1) {
-            isUpright = false;
-        }
+    double ang = squares[0].angle;
+    if(fabs(ang) > 1 && fabs(fabs(ang) - 90) > 1){
+        isUpright = false;
+        angle += ang;
     }
+// OLD - does not work
+//    double angle = 90.0;
+//    double isUpright = true;
+//    for (auto const &rect: squares) {
+//        angle += rect.angle / squares.size();
+//        if(fabs(rect.angle) > 1 && fabs(fabs(rect.angle) - 90) > 1) {
+//            isUpright = false;
+//        }
+//    }
     cout << "Average angle : " << angle << ", " << (isUpright ? "image is already upright, no further treatment" : "image is crooked, it will be set upright") << endl;
 
     if(!isUpright) {
