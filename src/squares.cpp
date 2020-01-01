@@ -25,7 +25,9 @@ double angle(Point pt1, Point pt2, Point pt0) {
 void findSquares(const Mat &image, vector<vector<Point> > &squares, int thresh, int N) {
     squares.clear();
     vector<vector<Point>> contours;
-    Mat imgBin = binarize(image);
+//    old
+//    Mat imgBin = binarize(image);
+    Mat imgBin = removeDrawings(image);
 
     // Find contours and store them all as a list
     findContours(imgBin, contours, RETR_LIST, CHAIN_APPROX_SIMPLE);
@@ -81,10 +83,10 @@ void pruneSquares(vector<vector<Point>> &rectangles, vector<Rect> &squares, int 
     unsigned long height = 0.0;
     for (auto const &rec: squares_tmp) {
         height += rec.size().height;
-        cout << rec.size() << endl;
+//        cout << rec.size() << endl;
     }
     height /= squares_tmp.size();
-    cout << height << endl;
+//    cout << height << endl;
 
     squares = squares_tmp;
     cout << "Number of square found so far : " << rectangles.size() << endl;
@@ -101,7 +103,7 @@ void pruneSquares(vector<vector<Point>> &rectangles, vector<Rect> &squares, int 
                 break;
             }
         }
-        if (!found && fabs(sq1.size().height - height) < 0.1 * height) {
+        if (!found && fabs(sq1.size().height - height) < 0.15 * height) {
             squares_tmp.push_back(sq1);
         }
     }
@@ -276,9 +278,13 @@ void uprightImage(const Mat &image, Mat &uprImage) {
 //    namedWindow("Rotated square detection", WINDOW_NORMAL);
 //    imshow("Rotated square detection", image);
 
-    // NEW : needs testing if the first icon contains a square
+    // NEW : better but not 100% viable : does not work on sample 6
     double angle = 90.0;
     double isUpright = true;
+    for (auto const &rect: squares) {
+        cout << rect.angle << endl;
+    }
+
     double ang = squares[0].angle;
     if(fabs(ang) > 1 && fabs(fabs(ang) - 90) > 1){
         isUpright = false;
