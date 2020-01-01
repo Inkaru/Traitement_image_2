@@ -8,5 +8,6 @@ using namespace std;
 using namespace cv;
 
 Mat binarize(const Mat& image);
+Mat removeDrawings(const Mat& image);
 
 #endif
