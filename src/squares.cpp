@@ -77,6 +77,15 @@ void pruneSquares(vector<vector<Point>> &rectangles, vector<Rect> &squares, int 
         }
     }
 
+    // average height used for prunning small squares
+    unsigned long height = 0.0;
+    for (auto const &rec: squares_tmp) {
+        height += rec.size().height;
+        cout << rec.size() << endl;
+    }
+    height /= squares_tmp.size();
+    cout << height << endl;
+
     squares = squares_tmp;
     cout << "Number of square found so far : " << rectangles.size() << endl;
     squares_tmp.clear();
@@ -92,7 +101,7 @@ void pruneSquares(vector<vector<Point>> &rectangles, vector<Rect> &squares, int 
                 break;
             }
         }
-        if (!found) {
+        if (!found && fabs(sq1.size().height - height) < 0.1 * height) {
             squares_tmp.push_back(sq1);
         }
     }
