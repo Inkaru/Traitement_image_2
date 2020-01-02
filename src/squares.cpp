@@ -139,9 +139,27 @@ void cropRectangles(const Mat& image, vector<Rect> &rectangles, const string& fi
     int counter = 0;
     int modulo;
 
+    // sort rectangles by their y coordinates
     sort(rectangles.begin(), rectangles.end(), [](Rect a, Rect b) {
         return a.y < b.y;
     });
+
+    // split the vector in lines
+    vector<vector<Rect>> splitted;
+    splitted.emplace_back();
+    double line = rectangles[0].y;
+    int count = 0;
+    for(auto const &rect: rectangles){
+        if(fabs(line - rect.y) < 50 ){
+            splitted[count].emplace_back(rect);
+        } else {
+            line = rect.y;
+            splitted.emplace_back();
+            count++;
+            splitted[count].emplace_back(rect);
+        }
+    }
+
 
     cout << "Start crop operation : " << endl;
     for (auto const &rect: rectangles) {
