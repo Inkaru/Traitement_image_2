@@ -18,7 +18,6 @@ using namespace cv;
 int main (void) {
     //Init vector of images, squares and rectangles
     vector<string> names;
-    names.emplace_back("../00000.png");
     //names.emplace_back("../00000rotated.png");
     vector<vector<Point>> squares;
     vector<Rect> rectangles;
@@ -32,6 +31,34 @@ int main (void) {
     string page;
     int row;
     int column;
+
+    string imName = "../sample/w000-scans/00001.png";
+    Mat im = imread(imName);
+    if(im.data == nullptr){
+        cerr << "Image not found: "<< imName << endl;
+        waitKey(0);
+        //system("pause");
+        exit(EXIT_FAILURE);
+    }
+
+    Mat test = removeDrawings(im);
+
+
+    bool result = false;
+    try
+    {
+        result = imwrite("../test.png",test);
+    }
+    catch (const cv::Exception& ex)
+    {
+        fprintf(stderr, "Exception converting image to PNG format: %s\n", ex.what());
+    }
+    if (result)
+        printf("Saved PNG file.\n");
+    else
+        printf("ERROR: Can't save PNG file.\n");
+
+
 
     // loop on the scripters (only one for now)
     for (scripterNumber=0; scripterNumber<1; scripterNumber++) {
