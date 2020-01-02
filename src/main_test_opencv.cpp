@@ -18,7 +18,6 @@ using namespace cv;
 int main (void) {
     //Init vector of images, squares and rectangles
     vector<string> names;
-    names.emplace_back("../00000.png");
     //names.emplace_back("../00000rotated.png");
     vector<vector<Point>> squares;
     vector<Rect> rectangles;
