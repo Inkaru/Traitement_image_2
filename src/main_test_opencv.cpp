@@ -32,31 +32,32 @@ int main (void) {
     int row;
     int column;
 
-    string imName = "../sample/w000-scans/00001.png";
-    Mat im = imread(imName);
-    if(im.data == nullptr){
-        cerr << "Image not found: "<< imName << endl;
-        waitKey(0);
-        //system("pause");
-        exit(EXIT_FAILURE);
-    }
-
-    Mat test = removeDrawings(im);
-
-
-    bool result = false;
-    try
-    {
-        result = imwrite("../test.png",test);
-    }
-    catch (const cv::Exception& ex)
-    {
-        fprintf(stderr, "Exception converting image to PNG format: %s\n", ex.what());
-    }
-    if (result)
-        printf("Saved PNG file.\n");
-    else
-        printf("ERROR: Can't save PNG file.\n");
+    // Test code
+//    string imName = "../sample/w000-scans/00001.png";
+//    Mat im = imread(imName);
+//    if(im.data == nullptr){
+//        cerr << "Image not found: "<< imName << endl;
+//        waitKey(0);
+//        //system("pause");
+//        exit(EXIT_FAILURE);
+//    }
+//
+//    Mat test = removeDrawings(im);
+//
+//
+//    bool result = false;
+//    try
+//    {
+//        result = imwrite("../test.png",test);
+//    }
+//    catch (const cv::Exception& ex)
+//    {
+//        fprintf(stderr, "Exception converting image to PNG format: %s\n", ex.what());
+//    }
+//    if (result)
+//        printf("Saved PNG file.\n");
+//    else
+//        printf("ERROR: Can't save PNG file.\n");
 
 
 
