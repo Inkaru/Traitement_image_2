@@ -69,7 +69,7 @@ int main (void) {
             Mat uprImage;
             uprightImage(image, uprImage);
             //Detect all squares
-            findSquares(uprImage, squares);
+            findSquares(uprImage, squares, 1);
             //Remove useless squares
             pruneSquares(squares, rectangles);
             //Draw remaining squares on the image

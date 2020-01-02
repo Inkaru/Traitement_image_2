@@ -22,10 +22,15 @@ double angle(Point pt1, Point pt2, Point pt0) {
  * @param thresh Unused
  * @param N Also unused
  */
-void findSquares(const Mat &image, vector<vector<Point> > &squares, int thresh, int N) {
+void findSquares(const Mat &image, vector<vector<Point> > &squares, int mode) {
     squares.clear();
     vector<vector<Point>> contours;
-    Mat imgBin = binarize(image);
+    Mat imgBin;
+    if(mode == 0){
+        imgBin = binarize(image);
+    } else {
+        imgBin = removeDrawings(image);
+    }
 //    Mat imgBin = removeDrawings(image);
 
     // Find contours and store them all as a list
@@ -259,7 +264,7 @@ void getIcons(Mat& image, const vector<Rect> &rectangles, vector<Rect> &icons) {
 void uprightImage(const Mat &image, Mat &uprImage) {
     // Find rectangles in the image
     vector<vector<Point>> rectangles;
-    findSquares(image, rectangles);
+    findSquares(image, rectangles, 0);
     // Convert to rotatedRects
     vector<RotatedRect> squares;
 

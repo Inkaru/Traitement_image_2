@@ -53,7 +53,7 @@ Mat removeDrawings(const Mat& image) {
 
     // Applying a binary threshold to the image
     Mat binary = Mat(size, CV_8UC3);
-    int thresh = 150;
+    int thresh = 170;
     int maxval = 256;
     threshold(grayscale, binary, thresh, maxval, THRESH_BINARY);
 
