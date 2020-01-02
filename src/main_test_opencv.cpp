@@ -78,7 +78,7 @@ int main (void) {
             //Generate images of remaining squares
             cropRectangles(uprImage, rectangles, "../generated_images/" + scripter + "_" + page);
             //Extract reference icons
-//            getIcons(uprImage, rectangles, referenceIcons);
+            getIcons(uprImage, rectangles, referenceIcons);
 
             // IMAGE RECOGNITION
             // Initialization

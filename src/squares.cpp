@@ -25,9 +25,8 @@ double angle(Point pt1, Point pt2, Point pt0) {
 void findSquares(const Mat &image, vector<vector<Point> > &squares, int thresh, int N) {
     squares.clear();
     vector<vector<Point>> contours;
-//    old
-//    Mat imgBin = binarize(image);
-    Mat imgBin = removeDrawings(image);
+    Mat imgBin = binarize(image);
+//    Mat imgBin = removeDrawings(image);
 
     // Find contours and store them all as a list
     findContours(imgBin, contours, RETR_LIST, CHAIN_APPROX_SIMPLE);
@@ -263,8 +262,14 @@ void uprightImage(const Mat &image, Mat &uprImage) {
     findSquares(image, rectangles);
     // Convert to rotatedRects
     vector<RotatedRect> squares;
+
+    // keeps only the rectangle for orientation detection
     for (auto const &rect: rectangles) {
-        squares.emplace_back(minAreaRect(rect));
+        int sqRatio = abs((rect[2].x - rect[0].x) / (rect[2].y - rect[0].y));
+        if (sqRatio > 3) {
+            cout << "rect found" << endl;
+            squares.emplace_back(minAreaRect(rect));
+        }
     }
 
     /*/////////////////*/
@@ -278,27 +283,20 @@ void uprightImage(const Mat &image, Mat &uprImage) {
 //    namedWindow("Rotated square detection", WINDOW_NORMAL);
 //    imshow("Rotated square detection", image);
 
-    // NEW : better but not 100% viable : does not work on sample 6
     double angle = 90.0;
     double isUpright = true;
     for (auto const &rect: squares) {
         cout << rect.angle << endl;
     }
 
-    double ang = squares[0].angle;
-    if(fabs(ang) > 1 && fabs(fabs(ang) - 90) > 1){
-        isUpright = false;
-        angle += ang;
+    if(squares.size() > 0) {
+        double ang = squares[0].angle;
+        if(fabs(ang) > 1 && fabs(fabs(ang) - 90) > 1){
+            isUpright = false;
+            angle += ang;
+        }
     }
-// OLD - does not work
-//    double angle = 90.0;
-//    double isUpright = true;
-//    for (auto const &rect: squares) {
-//        angle += rect.angle / squares.size();
-//        if(fabs(rect.angle) > 1 && fabs(fabs(rect.angle) - 90) > 1) {
-//            isUpright = false;
-//        }
-//    }
+
     cout << "Average angle : " << angle << ", " << (isUpright ? "image is already upright, no further treatment" : "image is crooked, it will be set upright") << endl;
 
     if(!isUpright) {

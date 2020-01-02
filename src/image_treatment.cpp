@@ -49,7 +49,7 @@ Mat removeDrawings(const Mat& image) {
     // Convert to greyscale
     Mat grayscale = Mat(size, CV_8UC3);
     cvtColor(image, grayscale, COLOR_BGR2GRAY);
-    imshow("Grayscale",grayscale);
+//    imshow("Grayscale",grayscale);
 
     // Applying a binary threshold to the image
     Mat binary = Mat(size, CV_8UC3);
