@@ -19,7 +19,7 @@ double angle(Point pt1, Point pt2, Point pt0);
 void findSquares(const Mat& image, vector<vector<Point>>& squares,  int mode = 0);
 void drawSquares(Mat& image, const vector<Rect>& rectangles);
 void pruneSquares(vector<vector<Point>> &squares, vector<Rect>& rectangles, int dist = 2);
-void cropRectangles(const Mat& image, const vector<Rect>& rectangles, const string& filename);
+void cropRectangles(const Mat& image, vector<Rect>& rectangles, const string& filename);
 void getIcons(Mat& image, const vector<Rect>& rectangles, vector<Rect>& icons);
 void uprightImage(const Mat& image, Mat& uprImage);
 

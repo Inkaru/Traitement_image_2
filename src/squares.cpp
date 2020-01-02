@@ -135,9 +135,13 @@ void drawSquares(Mat &image, const vector<Rect> &rectangles) {
  * @param image The image from which icon images will be extracted
  * @param rectangles The list of squares
  */
-void cropRectangles(const Mat& image, const vector<Rect> &rectangles, const string& filename) {
+void cropRectangles(const Mat& image, vector<Rect> &rectangles, const string& filename) {
     int counter = 0;
     int modulo;
+
+    sort(rectangles.begin(), rectangles.end(), [](Rect a, Rect b) {
+        return a.y > b.y;
+    });
 
     struct {
         bool operator()(Rect a, Rect b) const
