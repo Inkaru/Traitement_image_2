@@ -22,10 +22,16 @@ double angle(Point pt1, Point pt2, Point pt0) {
  * @param thresh Unused
  * @param N Also unused
  */
-void findSquares(const Mat &image, vector<vector<Point> > &squares, int thresh, int N) {
+void findSquares(const Mat &image, vector<vector<Point> > &squares, int mode) {
     squares.clear();
     vector<vector<Point>> contours;
-    Mat imgBin = removeDrawings(image);
+    Mat imgBin;
+    if(mode == 0){
+        imgBin = binarize(image);
+    } else {
+        imgBin = removeDrawings(image);
+    }
+//    Mat imgBin = removeDrawings(image);
 
     // Find contours and store them all as a list
     findContours(imgBin, contours, RETR_LIST, CHAIN_APPROX_SIMPLE);
@@ -77,6 +83,15 @@ void pruneSquares(vector<vector<Point>> &rectangles, vector<Rect> &squares, int 
         }
     }
 
+    // average height used for prunning small squares
+    unsigned long height = 0.0;
+    for (auto const &rec: squares_tmp) {
+        height += rec.size().height;
+//        cout << rec.size() << endl;
+    }
+    height /= squares_tmp.size();
+//    cout << height << endl;
+
     squares = squares_tmp;
     cout << "Number of square found so far : " << rectangles.size() << endl;
     squares_tmp.clear();
@@ -92,7 +107,7 @@ void pruneSquares(vector<vector<Point>> &rectangles, vector<Rect> &squares, int 
                 break;
             }
         }
-        if (!found) {
+        if (!found && fabs(sq1.size().height - height) < 0.15 * height) {
             squares_tmp.push_back(sq1);
         }
     }
@@ -249,32 +264,44 @@ void getIcons(Mat& image, const vector<Rect> &rectangles, vector<Rect> &icons) {
 void uprightImage(const Mat &image, Mat &uprImage) {
     // Find rectangles in the image
     vector<vector<Point>> rectangles;
-    findSquares(image, rectangles);
+    findSquares(image, rectangles, 0);
     // Convert to rotatedRects
     vector<RotatedRect> squares;
+
+    // keeps only the rectangle for orientation detection
     for (auto const &rect: rectangles) {
-        squares.emplace_back(minAreaRect(rect));
+        int sqRatio = abs((rect[2].x - rect[0].x) / (rect[2].y - rect[0].y));
+        if (sqRatio > 3) {
+            cout << "rect found" << endl;
+            squares.emplace_back(minAreaRect(rect));
+        }
     }
 
     /*/////////////////*/
-    for (auto const &rect: squares) {
-        Point2f vertices[4];
-        rect.points(vertices);
-        for(int i = 0; i<4; i++) {
-            line(image, vertices[i], vertices[(i+1)%4], Scalar(0, 255, 0), 3, LINE_AA);
-        }
-    }
-    namedWindow("Rotated square detection", WINDOW_NORMAL);
-    imshow("Rotated square detection", image);
+//    for (auto const &rect: squares) {
+//        Point2f vertices[4];
+//        rect.points(vertices);
+//        for(int i = 0; i<4; i++) {
+//            line(image, vertices[i], vertices[(i+1)%4], Scalar(0, 255, 0), 3, LINE_AA);
+//        }
+//    }
+//    namedWindow("Rotated square detection", WINDOW_NORMAL);
+//    imshow("Rotated square detection", image);
 
     double angle = 90.0;
     double isUpright = true;
     for (auto const &rect: squares) {
-        angle += rect.angle / squares.size();
-        if(fabs(rect.angle) > 1 && fabs(fabs(rect.angle) - 90) > 1) {
+        cout << rect.angle << endl;
+    }
+
+    if(squares.size() > 0) {
+        double ang = squares[0].angle;
+        if(fabs(ang) > 1 && fabs(fabs(ang) - 90) > 1){
             isUpright = false;
+            angle += ang;
         }
     }
+
     cout << "Average angle : " << angle << ", " << (isUpright ? "image is already upright, no further treatment" : "image is crooked, it will be set upright") << endl;
 
     if(!isUpright) {
