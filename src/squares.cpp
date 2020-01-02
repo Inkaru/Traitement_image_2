@@ -139,6 +139,15 @@ void cropRectangles(const Mat& image, const vector<Rect> &rectangles, const stri
     int counter = 0;
     int modulo;
 
+    struct {
+        bool operator()(Rect a, Rect b) const
+        {
+            return a.y < b.y;
+        }
+    } customLess;
+
+    std::sort(begin(rectangles), end(rectangles), customLess);
+
     cout << "Start crop operation : " << endl;
     for (auto const &rect: rectangles) {
         Mat crop = image(rect);
