@@ -101,7 +101,7 @@ int main (void) {
             //Remove useless squares
             pruneSquares(squares, rectangles);
             //Draw remaining squares on the image
-            drawSquares(uprImage, rectangles);
+//            drawSquares(uprImage, rectangles);
             imwrite( "out.png", uprImage );
             //Generate images of remaining squares
             cropRectangles(uprImage, rectangles, "../generated_images/" + scripter + "_" + page);

@@ -207,7 +207,7 @@ void getIcons(Mat& image, const vector<Rect> &rectangles, vector<Rect> &icons) {
     for (auto const &line: lines) {
         cout << line << " ";
         line(image, Point(0,line), Point(cols,line), (0,0,255), lineThickness);
-    }
+    }icon
     cout << endl;
 
     cout << "Centres columns : " << columns.size() << endl;
@@ -254,6 +254,61 @@ void getIcons(Mat& image, const vector<Rect> &rectangles, vector<Rect> &icons) {
     namedWindow("Lines detection", WINDOW_NORMAL);
     imshow("Lines detection", image);
     */
+
+}
+
+/**
+* @brief Extract reference icon of a given list of squares and an image
+* @param image The given image of the page
+* @param rectangles The list of squares
+* @param icon The rectangle of the reference icon
+* @return the icon id
+*/
+string getIcon(Mat& image, const vector<Rect> &rectangles, Rect& icon) {
+    cout << "Retrieving reference icon : " << endl;
+    vector<int> lines;
+    vector<int> columns;
+    for (auto const &rect: rectangles) {
+        bool linefound = false;
+        bool columnfound = false;
+        Point center = rect.tl(); //Top-left corner
+        for (auto const &line: lines) { // Line already registered -> correction by averaging
+            if (abs(line - center.y) < 25) {
+                linefound = true;
+                break;
+            }
+        }
+        if (!linefound) { // New line -> add to the list
+            lines.emplace_back(center.y);
+        }
+
+        for (auto const &col: columns) {
+            if (abs(col - center.x) < 25) { // Column already registered -> correction by averaging
+                columnfound = true;
+                std::replace(columns.begin(), columns.end(), col, (col + center.x) / 2);
+                break;
+            }
+        }
+        if (!columnfound) { // New column -> add to the list
+            columns.emplace_back(center.x);
+        }
+    }
+
+    // Calcul de la position de l'icône
+    sort(columns.begin(), columns.end());
+    int icon_col = int(0.9 * (columns[0] - fabs(columns[0] - columns[1])));
+
+    auto size = rectangles[0].size();
+    icon = Rect(Point(icon_col,lines[0]), size);
+
+    Mat temp_icon = image(icon);
+
+    vector<vector<KeyPoint>> keypoints;
+    vector<Mat> descriptors;
+    vector<String> names;
+    initIcons(keypoints, descriptors, names);
+
+    return identifyIcon(temp_icon, descriptors, names);
 }
 
 /**
