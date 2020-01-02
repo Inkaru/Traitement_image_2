@@ -25,7 +25,7 @@ double angle(Point pt1, Point pt2, Point pt0) {
 void findSquares(const Mat &image, vector<vector<Point> > &squares, int thresh, int N) {
     squares.clear();
     vector<vector<Point>> contours;
-    Mat imgBin = binarize(image);
+    Mat imgBin = removeDrawings(image);
 
     // Find contours and store them all as a list
     findContours(imgBin, contours, RETR_LIST, CHAIN_APPROX_SIMPLE);
