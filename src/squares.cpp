@@ -155,48 +155,47 @@ void cropRectangles(const Mat& image, vector<Rect> &rectangles, const string& sc
     }
 
     cout << "Start crop operation : " << endl;
-    int counter = 0;
-    int modulo;
     string cropname;
+    String label = "";
+    int colnb = 0;
+    int rownb = 0;
 
-    vector<Rect> icons;
-    getIcons(image, rectangles, icons);
-    string label = "";
+    for (auto &rectline: splitted) {
+        // Sort rectangles by their x coordinates (for each line)
+        sort(rectline.begin(), rectline.end(), [](Rect a, Rect b) {
+            return a.x < b.x;
+        });
 
-    for (auto const &rect: rectangles) {
-        Mat crop = image(rect);
-        //imshow("Cropped image n°" + to_string(counter), crop);
-        bool result = false;
-        modulo = counter % 5;
-        if(modulo == 0) { //Icon matching
-            Mat img = image(icons[counter/5]);
-            prepIcon(img);
-            label = identifyIcon(img);
+        label = getIcon(image, rectline);
+        colnb = 0;
+        for (auto const &rect: rectline) {
+            Mat crop = image(rect);
+            bool result = false;
+            cropname = "../generated_images/" + label + "_" + scripter + "_" + page + "_" + to_string(rownb) + "_" + to_string(colnb);
+            try {
+                // label_scripter_page_column_row.png
+                result = imwrite(cropname + ".png", crop);
+                ofstream txticon(cropname + ".txt");
+                txticon << "label " + label + "\n";
+                txticon << "form " + scripter + page + "\n";
+                txticon << "scripter " + scripter + "\n";
+                txticon << "page " + page + "\n";
+                txticon << "row " + to_string(rownb) + "\n";
+                txticon << "column " + to_string(colnb) + "\n";
+                txticon << "size undefined\n";
+                txticon.close();
+            }
+            catch (const Exception &ex) {
+                fprintf(stderr, "Exception converting image to PNG format: %s\n", ex.what());
+            }
+            if (result){
+                cout << "Saved PNG file n°" << cropname << endl;
+            } else {
+                cout << "ERROR: Can't save PNG file. (Image n°" << cropname << ")" << endl;
+            }
+            colnb++;
         }
-        label = (label != "") ? label : "undefined";
-        cropname = "../generated_images/" + label + "_" + scripter + "_" + page + "_" + to_string(counter/5) + "_" + to_string(modulo);
-        try {
-            // scripter_page_column_row.png
-            result = imwrite(cropname + ".png", crop);
-            ofstream txticon(cropname + ".txt");
-            txticon << "label " + label + "\n";
-            txticon << "form " + scripter + page + "\n";
-            txticon << "scripter " + scripter + "\n";
-            txticon << "page " + page + "\n";
-            txticon << "row " + to_string(counter/5) + "\n";
-            txticon << "column " + to_string(modulo) + "\n";
-            txticon << "size undefined\n";
-            txticon.close();
-            counter++;
-        }
-        catch (const Exception &ex) {
-            fprintf(stderr, "Exception converting image to PNG format: %s\n", ex.what());
-        }
-        if (result){
-            cout << "Saved PNG file n°" << cropname << endl;
-        } else {
-            cout << "ERROR: Can't save PNG file. (Image n°" << cropname << ")" << endl;
-        }
+        rownb++;
     }
 }
 
@@ -286,9 +285,9 @@ void getIcons(const Mat& image, const vector<Rect> &rectangles, vector<Rect> &ic
 * @param icon The rectangle of the reference icon
 * @return the icon id
 */
-/*
-string getIcon(Mat& image, const vector<Rect> &rectangles, Rect& icon) {
+string getIcon(const Mat& image, const vector<Rect>& rectangles) {
     cout << "Retrieving reference icon : " << endl;
+    Rect icon;
     vector<int> lines;
     vector<int> columns;
     for (auto const &rect: rectangles) {
@@ -326,13 +325,8 @@ string getIcon(Mat& image, const vector<Rect> &rectangles, Rect& icon) {
 
     Mat temp_icon = image(icon);
 
-    vector<vector<KeyPoint>> keypoints;
-    vector<Mat> descriptors;
-    vector<String> names;
-    initIcons(keypoints, descriptors, names);
-
-    return identifyIcon(temp_icon, descriptors, names);
-}*/
+    return identifyIcon(temp_icon);
+}
 
 /**
  * @brief Set an image upright relatively to its inner squares
