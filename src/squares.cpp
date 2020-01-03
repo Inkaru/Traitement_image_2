@@ -132,7 +132,7 @@ void drawSquares(Mat &image, const vector<Rect> &rectangles) {
  * @param rectangles The list of squares
  * @param filename String representing the name
  */
-void cropRectangles(const Mat& image, vector<Rect> &rectangles, const string& scripter, const string& page, vector<Mat>& descriptors, vector<string>& names) {
+void cropRectangles(const Mat& image, vector<Rect> &rectangles, const string& scripter, const string& page) {
     // Sort rectangles by their y coordinates
     sort(rectangles.begin(), rectangles.end(), [](Rect a, Rect b) {
         return a.y < b.y;
@@ -168,10 +168,10 @@ void cropRectangles(const Mat& image, vector<Rect> &rectangles, const string& sc
         //imshow("Cropped image n°" + to_string(counter), crop);
         bool result = false;
         modulo = counter % 5;
-        if(counter / 5 == 0) { //Icon matching /!\ not working
-            Mat img = image(icons[modulo]);
+        if(modulo == 0) { //Icon matching
+            Mat img = image(icons[counter/5]);
             prepIcon(img);
-            label = identifyIcon(img, descriptors, names);
+            label = identifyIcon(img);
         }
         label = (label != "") ? label : "undefined";
         cropname = "../generated_images/" + label + "_" + scripter + "_" + page + "_" + to_string(counter/5) + "_" + to_string(modulo);

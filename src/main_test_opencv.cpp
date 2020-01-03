@@ -27,12 +27,6 @@ int main (void) {
     vector<Rect> rectangles;
     vector<Rect> referenceIcons;
 
-    //Init sift
-    vector<vector<KeyPoint>> keypoints;
-    vector<Mat> descriptors;
-    vector<string> labels;
-    initIcons(keypoints, descriptors, labels);
-
     //Scan folder
     string filename;
     string iconeID;
@@ -89,7 +83,7 @@ int main (void) {
             //drawSquares(uprImage, rectangles);
             //imwrite( "out.png", uprImage );
             //Generate images of remaining squares
-            cropRectangles(uprImage, rectangles, scripter, page, descriptors, labels);
+            cropRectangles(uprImage, rectangles, scripter, page);
         }
     }
 

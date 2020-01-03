@@ -7,7 +7,7 @@
  */
 void initIcons(vector<vector<KeyPoint>>& keypoints, vector<Mat>& descriptors, vector<string>& labels){
     // Create SIFT detector
-    Ptr<xfeatures2d::SIFT> detector = xfeatures2d::SIFT::create();
+    Ptr<xfeatures2d::SIFT> detector = xfeatures2d::SIFT::create(400);
 
     vector<string> icons;
     glob("../icons", "", icons, false, true);
@@ -15,7 +15,7 @@ void initIcons(vector<vector<KeyPoint>>& keypoints, vector<Mat>& descriptors, ve
     // Parse icons
     for(auto const &name: icons){
         labels.push_back(string(name.begin() + 9, name.end() - 4));
-        Mat mat = imread(name);
+        Mat mat = imread(name, IMREAD_GRAYSCALE);
 
         vector<KeyPoint> keypoint; // Keypoints of the current icon
         detector->detect(mat, keypoint); // Detect keypoints
@@ -32,23 +32,28 @@ void initIcons(vector<vector<KeyPoint>>& keypoints, vector<Mat>& descriptors, ve
  * @param img The image to recognize
  * @return Best score
  */
-string identifyIcon(const Mat& img, vector<Mat>& descriptors, vector<string>& names){
-    // Detect keypoints and compute current tested image descriptor
-    Ptr<xfeatures2d::SIFT> detector = xfeatures2d::SIFT::create();
-    vector<KeyPoint> keypoint;
-    detector->detect(img, keypoint);
-    Mat descriptor;
-    detector->compute(img, keypoint, descriptor);
+string identifyIcon(const Mat& img){
+    //Load references
+    vector<string> icons;
+    vector<vector<KeyPoint>> keypoints2;
+    vector<Mat> descriptors2;
+    initIcons(keypoints2, descriptors2, icons);
 
-    // Init matching tools
-    Ptr<DescriptorMatcher> matcher = DescriptorMatcher::create(DescriptorMatcher::FLANNBASED);
-    vector<vector<DMatch>> knn_matches; //
+    // Detect keypoints and compute current tested image descriptor
+    Ptr<xfeatures2d::SIFT> detector = xfeatures2d::SIFT::create(400);
+    vector<KeyPoint> keypoint;
+    Mat descriptor;
+    detector->detectAndCompute(img, noArray(), keypoint, descriptor);
 
     int scores = 0;
+    //int maxIdx;
     string highest_score_name = "";
-    for(size_t i = 0; i < descriptors.size(); i++){ // Compare on all reference icons
-        matcher->knnMatch(descriptor, descriptors[i], knn_matches, 2);
-        
+    for(size_t i = 0; i < descriptors2.size(); i++){ // Compare on all reference icons
+        // Init matching tools
+        Ptr<DescriptorMatcher> matcher = DescriptorMatcher::create(DescriptorMatcher::FLANNBASED);
+        vector<vector<DMatch>> knn_matches;
+        matcher->knnMatch(descriptor, descriptors2[i], knn_matches, 2);
+
         const float ratio_thresh = 0.7f;
         std::vector<DMatch> good_matches;
         for (size_t i = 0; i < knn_matches.size(); i++)
@@ -58,13 +63,38 @@ string identifyIcon(const Mat& img, vector<Mat>& descriptors, vector<string>& na
                 good_matches.push_back(knn_matches[i][0]);
             }
         }
-        if(good_matches.size()>scores){
+        if(good_matches.size()>=scores){
             scores = good_matches.size();
-            highest_score_name = names[i];
+            highest_score_name = icons[i];
+            //maxIdx = i;
         }
     }
-    cout << "Score " << scores << " with " << highest_score_name << endl;
 
+    /*
+    //DEBUG
+    Ptr<DescriptorMatcher> matcher = DescriptorMatcher::create(DescriptorMatcher::FLANNBASED);
+    vector<vector<DMatch>> knn_matches;
+    matcher->knnMatch(descriptor, descriptors2[maxIdx], knn_matches, 2);
+
+    const float ratio_thresh = 0.7f;
+    std::vector<DMatch> good_matches;
+    for (size_t i = 0; i < knn_matches.size(); i++)
+    {
+        if (knn_matches[i][0].distance < ratio_thresh * knn_matches[i][1].distance)
+        {
+            good_matches.push_back(knn_matches[i][0]);
+        }
+    }
+    Mat img_matches;
+    drawMatches( img, keypoint, imread("../icons/" + icons[maxIdx] + ".png", IMREAD_GRAYSCALE), keypoints2[maxIdx], good_matches, img_matches, Scalar::all(-1),
+                 Scalar::all(-1), std::vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS );
+    //-- Show detected matches
+    imshow("Good Matches", img_matches );
+    waitKey();
+    cout << good_matches.size() << endl;
+     */
+
+    cout << "Score " << scores << " with " << highest_score_name << endl;
     return highest_score_name;
 }
 
