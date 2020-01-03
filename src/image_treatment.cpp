@@ -49,31 +49,31 @@ Mat removeDrawings(const Mat& image) {
     // Applying gaussian filter
     Mat gaussfilter = Mat(size, CV_8UC3);
     GaussianBlur(image, gaussfilter, Size(3, 3), 0, 0, BORDER_DEFAULT);
-//    imshow("Gaussian filtered image :",gaussfilter);
+    // imshow("Gaussian filtered image :",gaussfilter);
 
     // Applying a binary threshold to the image
     // Extract red channel
     Mat imR = Mat(size,CV_8UC3);
     extractChannel(gaussfilter, imR, 0);
-//    namedWindow("R",WINDOW_NORMAL);
-//    imshow("R",imR);
+    // namedWindow("R",WINDOW_NORMAL);
+    // imshow("R",imR);
 
     Mat binary = Mat(size, CV_8UC3);
     int thresh = 150;
     int maxval = 256;
     threshold(imR, binary, thresh, maxval, THRESH_BINARY);
-//    namedWindow("Threshold image",WINDOW_NORMAL);
-//    imshow("Threshold image", binary);
+    // namedWindow("Threshold image",WINDOW_NORMAL);
+    // imshow("Threshold image", binary);
 
-    // Applying morphomath opening --> not very useful, the pictures are too small
+    // Applying morphomath
     int operation = 2;      // 2: Opening; 3: Closing; 4: Gradient; 5: Top Hat; 6: Black Hat
     int morph_elem = 0;     // 0: Rect - 1: Cross - 2: Ellipse
-    int morph_size = 5;     // Kernel size : 2n +1
+    int morph_size = 5;     // Kernel size : 2n + 1
     Mat morphoMaths = Mat(size, CV_8UC3);
     Mat element = getStructuringElement(morph_elem, Size(2 * morph_size + 1, 2 * morph_size + 1), Point(morph_size, morph_size));
     morphologyEx(binary, morphoMaths, operation, element);
-//    namedWindow("Morpho image",WINDOW_NORMAL);
-//    imshow("Morpho image", morphoMaths);
+    // namedWindow("Morpho image",WINDOW_NORMAL);
+    // imshow("Morpho image", morphoMaths);
 
     return morphoMaths;
 }

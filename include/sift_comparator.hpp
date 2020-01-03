@@ -5,12 +5,17 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/xfeatures2d.hpp>
+#include "opencv2/core/utils/filesystem.hpp"
+#include "opencv2/imgproc.hpp"
+#include "opencv2/highgui.hpp"
 
 using namespace std;
 using namespace cv;
+using namespace cv::utils::fs;
 
-void initIcons(vector<vector<KeyPoint>>& keypoints, vector<Mat>& descriptors, vector<String>& names);
-String identifyIcon(const Mat& img, vector<Mat>& descriptors, vector<String>& names);
+void prepIcon(Mat& icon); //vire le texte en bas
+void initIcons(vector<vector<KeyPoint>>& keypoints, vector<Mat>& descriptors, vector<string>& labels);
+string identifyIcon(const Mat& img, vector<Mat>& descriptors, vector<string>& names);
 
 
 #endif /* SIFT_H_ */

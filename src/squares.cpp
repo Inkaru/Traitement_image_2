@@ -19,8 +19,7 @@ double angle(Point pt1, Point pt2, Point pt0) {
  * @brief Detect squares in image
  * @param image The given image
  * @param squares The vector of squares found
- * @param thresh Unused
- * @param N Also unused
+ * @param mode 0 to binarize, 1 to binarize AND remove drawings,
  */
 void findSquares(const Mat &image, vector<vector<Point> > &squares, int mode) {
     squares.clear();
@@ -31,7 +30,6 @@ void findSquares(const Mat &image, vector<vector<Point> > &squares, int mode) {
     } else {
         imgBin = removeDrawings(image);
     }
-//    Mat imgBin = removeDrawings(image);
 
     // Find contours and store them all as a list
     findContours(imgBin, contours, RETR_LIST, CHAIN_APPROX_SIMPLE);
@@ -68,7 +66,7 @@ void findSquares(const Mat &image, vector<vector<Point> > &squares, int mode) {
 }
 
 /**
- * @brief Remove rectangles detected as squares and duplicated squares
+ * @brief Remove rectangles detected as squares, duplicated squares and small squares
  * @param rectangles The pruned list of squares
  * @param squares The list of squares to be pruned
  * @param dist Unused
@@ -83,14 +81,12 @@ void pruneSquares(vector<vector<Point>> &rectangles, vector<Rect> &squares, int 
         }
     }
 
-    // average height used for prunning small squares
+    // Average height used for prunning small squares
     unsigned long height = 0.0;
     for (auto const &rec: squares_tmp) {
         height += rec.size().height;
-//        cout << rec.size() << endl;
     }
     height /= squares_tmp.size();
-//    cout << height << endl;
 
     squares = squares_tmp;
     cout << "Number of square found so far : " << rectangles.size() << endl;
@@ -100,14 +96,14 @@ void pruneSquares(vector<vector<Point>> &rectangles, vector<Rect> &squares, int 
     for (auto const &sq1: squares) {
         bool found = false;
         for (auto const &sq2: squares_tmp) {
-            //Square removed if its center is contained in another accepted square
+            //Square not selected if its center is contained in another accepted square
             Point center = (sq1.br() + sq1.tl()) * 0.5;
             if (center.inside(sq2)) {
                 found = true;
                 break;
             }
         }
-        if (!found && fabs(sq1.size().height - height) < 0.15 * height) {
+        if (!found && fabs(sq1.size().height - height) < 0.15 * height) { //Square not selected if its height is smaller than 15% of average heigth
             squares_tmp.push_back(sq1);
         }
     }
@@ -134,25 +130,23 @@ void drawSquares(Mat &image, const vector<Rect> &rectangles) {
  * @brief Generate icon images from detected squares
  * @param image The image from which icon images will be extracted
  * @param rectangles The list of squares
+ * @param filename String representing the name
  */
-void cropRectangles(const Mat& image, vector<Rect> &rectangles, const string& filename) {
-    int counter = 0;
-    int modulo;
-
-    // sort rectangles by their y coordinates
+void cropRectangles(const Mat& image, vector<Rect> &rectangles, const string& scripter, const string& page, vector<Mat>& descriptors, vector<string>& names) {
+    // Sort rectangles by their y coordinates
     sort(rectangles.begin(), rectangles.end(), [](Rect a, Rect b) {
         return a.y < b.y;
     });
 
-    // split the vector in lines
+    // Split the vector in lines
     vector<vector<Rect>> splitted;
     splitted.emplace_back();
     double line = rectangles[0].y;
     int count = 0;
     for(auto const &rect: rectangles){
-        if(fabs(line - rect.y) < 50 ){
+        if(fabs(line - rect.y) < 50 ){ // Fill splitted with current line
             splitted[count].emplace_back(rect);
-        } else {
+        } else { // Current line full, switch to the next line
             line = rect.y;
             splitted.emplace_back();
             count++;
@@ -160,24 +154,48 @@ void cropRectangles(const Mat& image, vector<Rect> &rectangles, const string& fi
         }
     }
 
-
     cout << "Start crop operation : " << endl;
+    int counter = 0;
+    int modulo;
+    string cropname;
+
+    vector<Rect> icons;
+    getIcons(image, rectangles, icons);
+    string label = "";
+
     for (auto const &rect: rectangles) {
         Mat crop = image(rect);
         //imshow("Cropped image n°" + to_string(counter), crop);
         bool result = false;
+        modulo = counter % 5;
+        if(counter / 5 == 0) { //Icon matching /!\ not working
+            Mat img = image(icons[modulo]);
+            prepIcon(img);
+            label = identifyIcon(img, descriptors, names);
+        }
+        label = (label != "") ? label : "undefined";
+        cropname = "../generated_images/" + label + "_" + scripter + "_" + page + "_" + to_string(counter/5) + "_" + to_string(modulo);
         try {
-            modulo = counter % 5;
-            result = imwrite(filename + "_" + to_string(counter/5) + "_" + to_string(modulo) + ".png", crop);
+            // scripter_page_column_row.png
+            result = imwrite(cropname + ".png", crop);
+            ofstream txticon(cropname + ".txt");
+            txticon << "label " + label + "\n";
+            txticon << "form " + scripter + page + "\n";
+            txticon << "scripter " + scripter + "\n";
+            txticon << "page " + page + "\n";
+            txticon << "row " + to_string(counter/5) + "\n";
+            txticon << "column " + to_string(modulo) + "\n";
+            txticon << "size undefined\n";
+            txticon.close();
             counter++;
         }
         catch (const Exception &ex) {
             fprintf(stderr, "Exception converting image to PNG format: %s\n", ex.what());
         }
         if (result){
-            cout << "Saved PNG file n°" << to_string(counter-1) << endl;
+            cout << "Saved PNG file n°" << cropname << endl;
         } else {
-            cout << "ERROR: Can't save PNG file. (Image n°" << to_string(counter-1) << ")" << endl;
+            cout << "ERROR: Can't save PNG file. (Image n°" << cropname << ")" << endl;
         }
     }
 }
@@ -188,7 +206,7 @@ void cropRectangles(const Mat& image, vector<Rect> &rectangles, const string& fi
  * @param rectangles The list of squares
  * @param icons The list of squares corresponding to the reference icons
  */
-void getIcons(Mat& image, const vector<Rect> &rectangles, vector<Rect> &icons) {
+void getIcons(const Mat& image, const vector<Rect> &rectangles, vector<Rect> &icons) {
     cout << "Retrieving reference icons : " << endl;
     vector<int> lines;
     vector<int> columns;
@@ -229,7 +247,7 @@ void getIcons(Mat& image, const vector<Rect> &rectangles, vector<Rect> &icons) {
     for (auto const &line: lines) {
         cout << line << " ";
         line(image, Point(0,line), Point(cols,line), (0,0,255), lineThickness);
-    }icon
+    }
     cout << endl;
 
     cout << "Centres columns : " << columns.size() << endl;
@@ -251,24 +269,6 @@ void getIcons(Mat& image, const vector<Rect> &rectangles, vector<Rect> &icons) {
     }
 
     cout << "Total icons : " << icons.size() << endl;
-    int counter = 0;
-    for (auto const &rect: icons){
-        bool result;
-        Mat crop = image(rect);
-        try {
-            result = imwrite("../generated_images/r" + to_string(counter) + ".png", crop);
-            counter++;
-        }
-        catch (const Exception &ex) {
-            fprintf(stderr, "Exception converting image to PNG format: %s\n", ex.what());
-        }
-        if (result){
-            cout << "Saved PNG file n°" << to_string(counter-1) << endl;
-        } else {
-            cout << "ERROR: Can't save PNG file. (Image n°" << to_string(counter-1) << ")" << endl;
-        }
-    }
-
     /*
     // Debug : affichage des boites autour des icones
     line(image, Point(icon_col,0), Point(icon_col,rows), (255, 0, 0), 5);
@@ -276,8 +276,8 @@ void getIcons(Mat& image, const vector<Rect> &rectangles, vector<Rect> &icons) {
     namedWindow("Lines detection", WINDOW_NORMAL);
     imshow("Lines detection", image);
     */
-
 }
+
 
 /**
 * @brief Extract reference icon of a given list of squares and an image
@@ -286,6 +286,7 @@ void getIcons(Mat& image, const vector<Rect> &rectangles, vector<Rect> &icons) {
 * @param icon The rectangle of the reference icon
 * @return the icon id
 */
+/*
 string getIcon(Mat& image, const vector<Rect> &rectangles, Rect& icon) {
     cout << "Retrieving reference icon : " << endl;
     vector<int> lines;
@@ -331,7 +332,7 @@ string getIcon(Mat& image, const vector<Rect> &rectangles, Rect& icon) {
     initIcons(keypoints, descriptors, names);
 
     return identifyIcon(temp_icon, descriptors, names);
-}
+}*/
 
 /**
  * @brief Set an image upright relatively to its inner squares
@@ -345,11 +346,10 @@ void uprightImage(const Mat &image, Mat &uprImage) {
     // Convert to rotatedRects
     vector<RotatedRect> squares;
 
-    // keeps only the rectangle for orientation detection
+    // Keeps only the rectangle for orientation detection
     for (auto const &rect: rectangles) {
         int sqRatio = abs((rect[2].x - rect[0].x) / (rect[2].y - rect[0].y));
         if (sqRatio > 3) {
-            cout << "rect found" << endl;
             squares.emplace_back(minAreaRect(rect));
         }
     }
@@ -367,10 +367,6 @@ void uprightImage(const Mat &image, Mat &uprImage) {
 
     double angle = 90.0;
     double isUpright = true;
-    for (auto const &rect: squares) {
-        cout << rect.angle << endl;
-    }
-
     if(squares.size() > 0) {
         double ang = squares[0].angle;
         if(fabs(ang) > 1 && fabs(fabs(ang) - 90) > 1){

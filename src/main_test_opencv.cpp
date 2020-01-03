@@ -11,77 +11,62 @@
 #include "sift_comparator.hpp"
 #include "opencv2/imgproc.hpp"
 #include "opencv2/highgui.hpp"
+#include "opencv2/core/utils/filesystem.hpp"
 
 using namespace std;
 using namespace cv;
+using namespace cv::utils::fs;
 
 int main (void) {
+    //Perf
+    auto timeStart = chrono::system_clock::now();
+
     //Init vector of images, squares and rectangles
     vector<string> names;
-    //names.emplace_back("../00000rotated.png");
     vector<vector<Point>> squares;
     vector<Rect> rectangles;
     vector<Rect> referenceIcons;
 
+    //Init sift
+    vector<vector<KeyPoint>> keypoints;
+    vector<Mat> descriptors;
+    vector<string> labels;
+    initIcons(keypoints, descriptors, labels);
+
+    //Scan folder
     string filename;
     string iconeID;
-    int scripterNumber;
     string scripter;
     int pageNumber;
     string page;
-    int row;
-    int column;
 
-    // Test code
-//    string imName = "../sample/w000-scans/00001.png";
-//    Mat im = imread(imName);
-//    if(im.data == nullptr){
-//        cerr << "Image not found: "<< imName << endl;
-//        waitKey(0);
-//        //system("pause");
-//        exit(EXIT_FAILURE);
-//    }
-//
-//    Mat test = removeDrawings(im);
-//
-//
-//    bool result = false;
-//    try
-//    {
-//        result = imwrite("../test.png",test);
-//    }
-//    catch (const cv::Exception& ex)
-//    {
-//        fprintf(stderr, "Exception converting image to PNG format: %s\n", ex.what());
-//    }
-//    if (result)
-//        printf("Saved PNG file.\n");
-//    else
-//        printf("ERROR: Can't save PNG file.\n");
+    if(!exists("../generated_images")){
+        cout << "Create generated_images folder" << endl;
+    }else{
+        cout << "Empty generated_images folder" << endl;
+        remove_all("../generated_images");
+    }
+    bool res = createDirectory("../generated_images");
+    if(!res) {
+        return EXIT_FAILURE;
+    }
 
+    vector<string> folderScripters;
+    glob("../sample", "w***-scans", folderScripters, false, true);
 
-
-    // loop on the scripters (only one for now)
-    for (scripterNumber=0; scripterNumber<1; scripterNumber++) {
-        if(scripterNumber<10) {
-            scripter = "00" + std::to_string(scripterNumber);
-        } else if(scripterNumber<100) {
-            scripter = "0" + std::to_string(scripterNumber);
-        } else {
-            scripter = std::to_string(scripterNumber);
-        }
-        // loop on the 21 pages of each scripter
-        for(pageNumber=0;pageNumber<22;pageNumber++) {
+    // Loop on the scripters
+    for (auto const &fScript: folderScripters) {
+        cout << "Enter folder " << fScript << endl;
+        scripter = fScript.substr(11, 3);
+        // loop on the 22 pages of each scripter ( /!\ so max index is 21 hein)
+        for(pageNumber=0;pageNumber<21;pageNumber++) {
             if(pageNumber<10) {
                 page = "0" + std::to_string(pageNumber);
             } else {
                 page = std::to_string(pageNumber);
             }
             filename = "../sample/w000-scans/" + scripter + page + ".png";
-
-
             squares.clear();
-            //todo : replace lines above to sift on all drawings with the minimal reference icon set
             rectangles.clear();
             referenceIcons.clear();
 
@@ -101,100 +86,16 @@ int main (void) {
             //Remove useless squares
             pruneSquares(squares, rectangles);
             //Draw remaining squares on the image
-//            drawSquares(uprImage, rectangles);
-            imwrite( "out.png", uprImage );
+            //drawSquares(uprImage, rectangles);
+            //imwrite( "out.png", uprImage );
             //Generate images of remaining squares
-            cropRectangles(uprImage, rectangles, "../generated_images/" + scripter + "_" + page);
-            //Extract reference icons
-            getIcons(uprImage, rectangles, referenceIcons);
-
-            // IMAGE RECOGNITION
-            // Initialization
-            vector<vector<KeyPoint>> keypoints;
-            vector<Mat> descriptors;
-            vector<String> names;
-            initIcons(keypoints, descriptors, names);
-
-            // Matching
-            // debug / test
-            Mat test = imread("../generated_images/0.png");
-            cout << "Icon corresponding to 0.png is " << identifyIcon(test, descriptors, names) << endl;
-
-            int c = waitKey();
-            if((char)c == 27) {
-                break;
-            }
-
+            cropRectangles(uprImage, rectangles, scripter, page, descriptors, labels);
         }
     }
 
-//
-//    for( int i = 0; i < names.size(); i++ )
-//    {
-//
-//        squares.clear();
-//        //todo : replace lines above to sift on all drawings with the minimal reference icon set
-//        rectangles.clear();
-//        referenceIcons.clear();
-//
-//        // CROPPING IMAGES AND ICONS
-//        cout << "Process image " << names[i] << endl;
-//        Mat image = imread(names[i], 1);
-//        if(image.empty())
-//        {
-//            cout << "Couldn't load " << names[i] << endl;
-//            continue;
-//        }
-//        //Set upright if necessary
-//        Mat uprImage;
-//        uprightImage(image, uprImage);
-//        //Detect all squares
-//        findSquares(uprImage, squares);
-//        //Remove useless squares
-//        pruneSquares(squares, rectangles);
-//        //Draw remaining squares on the image
-//        drawSquares(uprImage, rectangles);
-//        imwrite( "out.png", uprImage );
-//        //Generate images of remaining squares
-//        cropRectangles(uprImage, rectangles);
-//        //Extract reference icons
-//        getIcons(uprImage, rectangles, referenceIcons);
-//
-//        // IMAGE RECOGNITION
-//        // Initialization
-//        vector<vector<KeyPoint>> keypoints;
-//        vector<Mat> descriptors;
-//        vector<String> names;
-//        initIcons(keypoints, descriptors, names);
-//
-//        // Matching
-//        // debug / test
-//        Mat test = imread("../generated_images/0.png");
-//        cout << "Icon corresponding to 0.png is " << identifyIcon(test, descriptors, names) << endl;
-//
-//        int c = waitKey();
-//        if((char)c == 27) {
-//            break;
-//        }
-//    }
-
- /*
-    //TEST ROTATED IMAGE
-    Mat image = imread("../00000rotated.png", 1);
-    Mat dst;
-
-    uprightImage(image, dst);
-
-    vector<vector<Point>> initialSquares;
-    vector<Rect> prunedSquares;
-    vector<Rect> icons;
-
-    findSquares(dst, initialSquares);
-    pruneSquares(initialSquares, prunedSquares);
-    drawSquares(dst,prunedSquares);
-    cropRectangles(dst,prunedSquares);
-    getIcons(dst, prunedSquares, icons);
-*/
+    auto timeEnd = chrono::system_clock::now();
+    chrono::duration<double> elapsed_seconds = timeEnd-timeStart;
+    cout << endl << "Program finished in " << to_string(elapsed_seconds.count()) << "s" << endl;
 
     int c = waitKey();
 	return EXIT_SUCCESS;

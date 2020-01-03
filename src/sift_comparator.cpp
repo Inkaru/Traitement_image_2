@@ -1,18 +1,21 @@
 #include "sift_comparator.hpp"
-#include "opencv2/imgproc.hpp"
-#include "opencv2/highgui.hpp"
 
 /**
  * @brief Init the sift detector with reference icons
+ * @param keypoints List of keypoints
+ * @param Descriptor List of decriptor
  */
-void initIcons(vector<vector<KeyPoint>>& keypoints, vector<Mat>& descriptors, vector<String>& names){
+void initIcons(vector<vector<KeyPoint>>& keypoints, vector<Mat>& descriptors, vector<string>& labels){
     // Create SIFT detector
     Ptr<xfeatures2d::SIFT> detector = xfeatures2d::SIFT::create();
 
+    vector<string> icons;
+    glob("../icons", "", icons, false, true);
+
     // Parse icons
-    for(int i = 0; i<7; i++){
-        String path = "../generated_images/r" + to_string(i) + ".png";
-        Mat mat = imread(path);
+    for(auto const &name: icons){
+        labels.push_back(string(name.begin() + 9, name.end() - 4));
+        Mat mat = imread(name);
 
         vector<KeyPoint> keypoint; // Keypoints of the current icon
         detector->detect(mat, keypoint); // Detect keypoints
@@ -21,16 +24,15 @@ void initIcons(vector<vector<KeyPoint>>& keypoints, vector<Mat>& descriptors, ve
 
         keypoints.push_back(keypoint); //todo : remove, possibly useless
         descriptors.push_back(descriptor);
-        names.push_back("r" + to_string(i));
     }
 }
 
 /**
  * @brief Find the icon matching the best a given image
  * @param img The image to recognize
- * @return Name of the closest reference icon
+ * @return Best score
  */
-String identifyIcon(const Mat& img, vector<Mat>& descriptors, vector<String>& names){
+string identifyIcon(const Mat& img, vector<Mat>& descriptors, vector<string>& names){
     // Detect keypoints and compute current tested image descriptor
     Ptr<xfeatures2d::SIFT> detector = xfeatures2d::SIFT::create();
     vector<KeyPoint> keypoint;
@@ -43,7 +45,7 @@ String identifyIcon(const Mat& img, vector<Mat>& descriptors, vector<String>& na
     vector<vector<DMatch>> knn_matches; //
 
     int scores = 0;
-    String highest_score_name = "";
+    string highest_score_name = "";
     for(size_t i = 0; i < descriptors.size(); i++){ // Compare on all reference icons
         matcher->knnMatch(descriptor, descriptors[i], knn_matches, 2);
         
@@ -61,6 +63,18 @@ String identifyIcon(const Mat& img, vector<Mat>& descriptors, vector<String>& na
             highest_score_name = names[i];
         }
     }
-    
+    cout << "Score " << scores << " with " << highest_score_name << endl;
+
     return highest_score_name;
+}
+
+void prepIcon(Mat& icon) {
+    Point textOver[1][4];
+    textOver[0][0] = Point(0, icon.size().height);
+    textOver[0][1] = Point(icon.size().width, icon.size().height);
+    textOver[0][2] = Point(icon.size().width, icon.size().height * 0.79);
+    textOver[0][3] = Point(0, icon.size().height * 0.79);
+    const Point* ppt[1] = {textOver[0]};
+    int npt[1] = {4};
+    fillPoly(icon, ppt, npt, 1, Scalar(255, 255, 255));
 }
