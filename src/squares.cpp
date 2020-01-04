@@ -127,7 +127,7 @@ void drawSquares(Mat &image, const vector<Rect> &rectangles) {
 }
 
 /**
- * @brief Generate icon images from detected squares
+ * @brief Generate icon images and txt from detected squares
  * @param image The image from which icon images will be extracted
  * @param rectangles The list of squares
  * @param filename String representing the name
@@ -168,6 +168,7 @@ void cropRectangles(const Mat& image, vector<Rect> &rectangles, const string& sc
             return a.x < b.x;
         });
 
+        // Find the reference icon of the line and get label and size
         getIcon(image,rectline,icon);
         label = matchIcon(icon);
         size = matchSize(icon);
@@ -291,8 +292,7 @@ void getIcons(const Mat& image, const vector<Rect> &rectangles, vector<Rect> &ic
 * @brief Extract reference icon of a given list of squares and an image
 * @param image The given image of the page
 * @param rectangles The list of squares
-* @param icon The rectangle of the reference icon
-* @return the icon id
+* @param icon The reference icon
 */
 void getIcon(const Mat& image, const vector<Rect>& rectangles, Mat& icon) {
     cout << "Retrieving reference icon : " << endl;
@@ -325,7 +325,7 @@ void getIcon(const Mat& image, const vector<Rect>& rectangles, Mat& icon) {
         }
     }
 
-    // Calcul de la position de l'icône
+    // Compute icon's position and convert to matrix
     sort(columns.begin(), columns.end());
     int icon_col = int(0.9 * (columns[0] - fabs(columns[0] - columns[1])));
 
