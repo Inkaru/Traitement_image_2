@@ -32,12 +32,14 @@ void initIcons(vector<vector<KeyPoint>>& keypoints, vector<Mat>& descriptors, ve
  * @param img The image to recognize
  * @return Best score
  */
-string identifyIcon(const Mat& img){
+string identifyIcon(Mat& img){
     //Load references
     vector<string> icons;
     vector<vector<KeyPoint>> keypoints2;
     vector<Mat> descriptors2;
     initIcons(keypoints2, descriptors2, icons);
+
+    prepIcon(img);
 
     // Detect keypoints and compute current tested image descriptor
     Ptr<xfeatures2d::SIFT> detector = xfeatures2d::SIFT::create(400);
@@ -46,7 +48,7 @@ string identifyIcon(const Mat& img){
     detector->detectAndCompute(img, noArray(), keypoint, descriptor);
 
     int scores = 0;
-    //int maxIdx;
+    int maxIdx;
     string highest_score_name = "";
     for(size_t i = 0; i < descriptors2.size(); i++){ // Compare on all reference icons
         // Init matching tools
@@ -66,12 +68,12 @@ string identifyIcon(const Mat& img){
         if(good_matches.size()>=scores){
             scores = good_matches.size();
             highest_score_name = icons[i];
-            //maxIdx = i;
+            maxIdx = i;
         }
     }
 
-    /*
     //DEBUG
+    int MIN_MATCH_COUNT = 10;
     Ptr<DescriptorMatcher> matcher = DescriptorMatcher::create(DescriptorMatcher::FLANNBASED);
     vector<vector<DMatch>> knn_matches;
     matcher->knnMatch(descriptor, descriptors2[maxIdx], knn_matches, 2);
@@ -85,14 +87,59 @@ string identifyIcon(const Mat& img){
             good_matches.push_back(knn_matches[i][0]);
         }
     }
+
     Mat img_matches;
-    drawMatches( img, keypoint, imread("../icons/" + icons[maxIdx] + ".png", IMREAD_GRAYSCALE), keypoints2[maxIdx], good_matches, img_matches, Scalar::all(-1),
-                 Scalar::all(-1), std::vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS );
+
+    if(good_matches.size() > MIN_MATCH_COUNT){
+
+        vector<Point2f> pts_src;
+        vector<Point2f> pts_dst;
+
+        for(auto p: good_matches){
+            pts_src.push_back(keypoint[p.queryIdx].pt);
+            pts_dst.push_back(keypoints2[maxIdx][p.trainIdx].pt);
+        }
+
+        drawMatches( img, keypoint, imread("../icons/" + icons[maxIdx] + ".png", IMREAD_GRAYSCALE), keypoints2[maxIdx], good_matches, img_matches, Scalar::all(-1),
+                     Scalar::all(-1), std::vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS );
+        //-- Show detected matches
+        imshow("Good Matches & Object detection", img_matches );
+
+        Mat2f H = findHomography(pts_src, pts_dst, RANSAC);
+        if(!H.empty()){
+//            std::vector<Point2f> obj_corners(4);
+//
+//            obj_corners[0] = Point2f(0, 0);
+//            obj_corners[1] = Point2f( (float)img.cols, 0 );
+//            obj_corners[2] = Point2f( (float)img.cols, (float)img.rows );
+//            obj_corners[3] = Point2f( 0, (float)img.rows );
+//            std::vector<Point2f> scene_corners(4);
+//            cout << "persp" << endl;
+//            perspectiveTransform( obj_corners, scene_corners, H);
+//            cout << "persp" << endl;
+//
+//            //-- Draw lines between the corners (the mapped object in the scene - image_2 )
+//            line( img_matches, scene_corners[0] + Point2f((float)img.cols, 0),
+//                  scene_corners[1] + Point2f((float)img.cols, 0), Scalar(0, 255, 0), 4 );
+//            line( img_matches, scene_corners[1] + Point2f((float)img.cols, 0),
+//                  scene_corners[2] + Point2f((float)img.cols, 0), Scalar( 0, 255, 0), 4 );
+//            line( img_matches, scene_corners[2] + Point2f((float)img.cols, 0),
+//                  scene_corners[3] + Point2f((float)img.cols, 0), Scalar( 0, 255, 0), 4 );
+//            line( img_matches, scene_corners[3] + Point2f((float)img.cols, 0),
+//                  scene_corners[0] + Point2f((float)img.cols, 0), Scalar( 0, 255, 0), 4 );
+                cout << "good" << endl;
+//            cv::warpPerspective(img, img_matches, H, img.size());
+//            imshow("Test", img_matches );
+//            waitKey();
+        }
+    }
+
+
     //-- Show detected matches
     imshow("Good Matches", img_matches );
     waitKey();
     cout << good_matches.size() << endl;
-     */
+
 
     cout << "Score " << scores << " with " << highest_score_name << endl;
     return highest_score_name;
@@ -108,3 +155,119 @@ void prepIcon(Mat& icon) {
     int npt[1] = {4};
     fillPoly(icon, ppt, npt, 1, Scalar(255, 255, 255));
 }
+
+void test(){
+    Mat img = imread( "../sample/w000-scans/00015.png" );
+    Mat templ = imread( "../icons/injury.png" );
+    Mat result;
+
+    int match_method = 4;
+
+    const char* image_window = "Source Image";
+    const char* result_window = "Result window";
+    namedWindow( image_window, WINDOW_NORMAL );
+    namedWindow( result_window, WINDOW_NORMAL );
+
+    Mat img_display;
+    img.copyTo( img_display );
+
+    int result_cols =  img.cols - templ.cols + 1;
+    int result_rows = img.rows - templ.rows + 1;
+    result.create( result_rows, result_cols, CV_32FC1 );
+    matchTemplate(img, templ, result, match_method);
+
+    normalize( result, result, 0, 1, NORM_MINMAX, -1, Mat() );
+    double minVal; double maxVal; Point minLoc; Point maxLoc;
+    Point matchLoc;
+    minMaxLoc( result, &minVal, &maxVal, &minLoc, &maxLoc, Mat() );
+    if( match_method  == TM_SQDIFF || match_method == TM_SQDIFF_NORMED )
+    { matchLoc = minLoc; }
+    else
+    { matchLoc = maxLoc; }
+    rectangle( img_display, matchLoc, Point( matchLoc.x + templ.cols , matchLoc.y + templ.rows ), Scalar::all(0), 2, 8, 0 );
+    rectangle( result, matchLoc, Point( matchLoc.x + templ.cols , matchLoc.y + templ.rows ), Scalar::all(0), 2, 8, 0 );
+    imshow( image_window, img_display );
+    imshow( result_window, result );
+    waitKey();
+}
+
+void matchIcon(Mat& img) {
+
+    // method used for matchTemplate
+    int match_method = 4;   // TM COEFF
+
+    // icons sheet used to find match
+    Mat img = imread("../snippets3.png");
+
+    // loop on icons
+    for(auto const &ico: icons){
+
+//        Mat img_display;
+//        img.copyTo( img_display );
+
+        Mat result;
+        Mat templ = src(ico);
+        int result_cols =  img.cols - templ.cols + 1;
+        int result_rows = img.rows - templ.rows + 1;
+        result.create( result_rows, result_cols, CV_32FC1 );
+        matchTemplate(img, templ, result, match_method);
+
+
+        normalize( result, result, 0, 1, NORM_MINMAX, -1, Mat() );
+        double minVal; double maxVal; Point minLoc; Point maxLoc;
+        Point matchLoc;
+        minMaxLoc( result, &minVal, &maxVal, &minLoc, &maxLoc, Mat() );
+        if( match_method  == TM_SQDIFF || match_method == TM_SQDIFF_NORMED )
+        { matchLoc = minLoc; }
+        else
+        { matchLoc = maxLoc; }
+
+//        rectangle( img_display, matchLoc, Point( matchLoc.x + templ.cols , matchLoc.y + templ.rows ), Scalar::all(0), 2, 8, 0 );
+//        rectangle( result, matchLoc, Point( matchLoc.x + templ.cols , matchLoc.y + templ.rows ), Scalar::all(0), 2, 8, 0 );
+
+        Point center(matchLoc.x + templ.cols/2, 0) ;
+
+//        cout << center.x << endl;
+
+        if(center.x < 400 )
+            { cout << "1" << endl;}
+        else if(center.x < 600 )
+            { cout << "2" << endl;}
+        else if(center.x < 800 )
+            { cout << "3" << endl;}
+        else if(center.x < 1000 )
+            { cout << "4" << endl;}
+        else if(center.x < 1200 )
+            { cout << "5" << endl;}
+        else if(center.x < 1400 )
+            { cout << "6" << endl;}
+        else if(center.x < 1600 )
+            { cout << "7" << endl;}
+        else if(center.x < 1800 )
+            { cout << "8" << endl;}
+        else if(center.x < 2000 )
+            { cout << "9" << endl;}
+        else if(center.x < 2200 )
+            { cout << "10" << endl;}
+        else if(center.x < 2400 )
+            { cout << "11" << endl;}
+        else if(center.x < 2600 )
+            { cout << "12" << endl;}
+        else if(center.x < 2800 )
+            { cout << "13" << endl;}
+        else
+            { cout << "14" << endl;}
+
+//        namedWindow( "image_window", WINDOW_NORMAL );
+//        namedWindow( "result_window", WINDOW_NORMAL );
+//        imshow( "image_window", img_display );
+//        imshow( "result_window", result );
+//
+//        waitKey();
+
+    }
+
+}
+
+
+

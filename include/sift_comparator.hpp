@@ -9,13 +9,16 @@
 #include "opencv2/imgproc.hpp"
 #include "opencv2/highgui.hpp"
 
+#include <opencv2/calib3d.hpp>
+
 using namespace std;
 using namespace cv;
 using namespace cv::utils::fs;
 
 void prepIcon(Mat& icon); //vire le texte en bas
 void initIcons(vector<vector<KeyPoint>>& keypoints, vector<Mat>& descriptors, vector<string>& labels);
-string identifyIcon(const Mat& img);
-
+string identifyIcon(Mat& img);
+void test();
+void match(const Mat& img, const vector<Rect>& icons, vector<string>& names);
 
 #endif /* SIFT_H_ */
