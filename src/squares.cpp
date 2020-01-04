@@ -267,6 +267,11 @@ void getIcons(const Mat& image, const vector<Rect> &rectangles, vector<Rect> &ic
         icons.emplace_back(Rect(Point(icon_col,l), size));
     }
 
+    // todo : check if icons are already sorted
+    sort(icons.begin(), icons.end(), [](Rect a, Rect b) {
+        return a.y < b.y;
+    });
+
     cout << "Total icons : " << icons.size() << endl;
     /*
     // Debug : affichage des boites autour des icones
@@ -325,7 +330,7 @@ string getIcon(const Mat& image, const vector<Rect>& rectangles) {
 
     Mat temp_icon = image(icon);
 
-    return identifyIcon(temp_icon);
+    return matchIcon(temp_icon);
 }
 
 /**

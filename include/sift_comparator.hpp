@@ -18,7 +18,6 @@ using namespace cv::utils::fs;
 void prepIcon(Mat& icon); //vire le texte en bas
 void initIcons(vector<vector<KeyPoint>>& keypoints, vector<Mat>& descriptors, vector<string>& labels);
 string identifyIcon(Mat& img);
-void test();
-void match(const Mat& img, const vector<Rect>& icons, vector<string>& names);
+string matchIcon(Mat& templ);
 
 #endif /* SIFT_H_ */

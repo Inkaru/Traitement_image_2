@@ -53,7 +53,7 @@ int main (void) {
         cout << "Enter folder " << fScript << endl;
         scripter = fScript.substr(11, 3);
         // loop on the 22 pages of each scripter ( /!\ so max index is 21 hein)
-        for(pageNumber=0;pageNumber<21;pageNumber++) {
+        for(pageNumber=0;pageNumber<22;pageNumber++) {
             if(pageNumber<10) {
                 page = "0" + std::to_string(pageNumber);
             } else {

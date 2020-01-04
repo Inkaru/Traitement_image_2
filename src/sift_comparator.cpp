@@ -156,42 +156,7 @@ void prepIcon(Mat& icon) {
     fillPoly(icon, ppt, npt, 1, Scalar(255, 255, 255));
 }
 
-void test(){
-    Mat img = imread( "../sample/w000-scans/00015.png" );
-    Mat templ = imread( "../icons/injury.png" );
-    Mat result;
-
-    int match_method = 4;
-
-    const char* image_window = "Source Image";
-    const char* result_window = "Result window";
-    namedWindow( image_window, WINDOW_NORMAL );
-    namedWindow( result_window, WINDOW_NORMAL );
-
-    Mat img_display;
-    img.copyTo( img_display );
-
-    int result_cols =  img.cols - templ.cols + 1;
-    int result_rows = img.rows - templ.rows + 1;
-    result.create( result_rows, result_cols, CV_32FC1 );
-    matchTemplate(img, templ, result, match_method);
-
-    normalize( result, result, 0, 1, NORM_MINMAX, -1, Mat() );
-    double minVal; double maxVal; Point minLoc; Point maxLoc;
-    Point matchLoc;
-    minMaxLoc( result, &minVal, &maxVal, &minLoc, &maxLoc, Mat() );
-    if( match_method  == TM_SQDIFF || match_method == TM_SQDIFF_NORMED )
-    { matchLoc = minLoc; }
-    else
-    { matchLoc = maxLoc; }
-    rectangle( img_display, matchLoc, Point( matchLoc.x + templ.cols , matchLoc.y + templ.rows ), Scalar::all(0), 2, 8, 0 );
-    rectangle( result, matchLoc, Point( matchLoc.x + templ.cols , matchLoc.y + templ.rows ), Scalar::all(0), 2, 8, 0 );
-    imshow( image_window, img_display );
-    imshow( result_window, result );
-    waitKey();
-}
-
-void matchIcon(Mat& img) {
+string matchIcon(Mat& templ) {
 
     // method used for matchTemplate
     int match_method = 4;   // TM COEFF
@@ -199,14 +164,11 @@ void matchIcon(Mat& img) {
     // icons sheet used to find match
     Mat img = imread("../snippets3.png");
 
-    // loop on icons
-    for(auto const &ico: icons){
 
 //        Mat img_display;
 //        img.copyTo( img_display );
 
         Mat result;
-        Mat templ = src(ico);
         int result_cols =  img.cols - templ.cols + 1;
         int result_rows = img.rows - templ.rows + 1;
         result.create( result_rows, result_cols, CV_32FC1 );
@@ -230,33 +192,33 @@ void matchIcon(Mat& img) {
 //        cout << center.x << endl;
 
         if(center.x < 400 )
-            { cout << "1" << endl;}
+        { return "accident";}
         else if(center.x < 600 )
-            { cout << "2" << endl;}
+        { return "bomb";}
         else if(center.x < 800 )
-            { cout << "3" << endl;}
+        { return "car";}
         else if(center.x < 1000 )
-            { cout << "4" << endl;}
+        { return "casualty";}
         else if(center.x < 1200 )
-            { cout << "5" << endl;}
+        { return "electricity";}
         else if(center.x < 1400 )
-            { cout << "6" << endl;}
+        { return "fire";}
         else if(center.x < 1600 )
-            { cout << "7" << endl;}
+        { return "fireBrigade";}
         else if(center.x < 1800 )
-            { cout << "8" << endl;}
+        { return "flood";}
         else if(center.x < 2000 )
-            { cout << "9" << endl;}
+        { return "gas";}
         else if(center.x < 2200 )
-            { cout << "10" << endl;}
+        { return "injury";}
         else if(center.x < 2400 )
-            { cout << "11" << endl;}
+        { return "paramedics";}
         else if(center.x < 2600 )
-            { cout << "12" << endl;}
+        { return "person";}
         else if(center.x < 2800 )
-            { cout << "13" << endl;}
+        { return "police";}
         else
-            { cout << "14" << endl;}
+        { return "roadBlock";}
 
 //        namedWindow( "image_window", WINDOW_NORMAL );
 //        namedWindow( "result_window", WINDOW_NORMAL );
@@ -265,7 +227,7 @@ void matchIcon(Mat& img) {
 //
 //        waitKey();
 
-    }
+
 
 }
 
