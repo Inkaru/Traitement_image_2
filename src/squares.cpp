@@ -155,6 +155,7 @@ void cropRectangles(const Mat& image, vector<Rect> &rectangles, const string& sc
     }
 
     cout << "Start crop operation : " << endl;
+    Mat icon;
     string cropname;
     String label = "";
     String size = "";
@@ -167,7 +168,9 @@ void cropRectangles(const Mat& image, vector<Rect> &rectangles, const string& sc
             return a.x < b.x;
         });
 
-        label = getIcon(image, rectline);
+        getIcon(image,rectline,icon);
+        label = matchIcon(icon);
+        size = matchSize(icon);
         colnb = 0;
         for (auto const &rect: rectline) {
             Mat crop = image(rect);
@@ -183,7 +186,7 @@ void cropRectangles(const Mat& image, vector<Rect> &rectangles, const string& sc
                 txticon << "page " + page + "\n";
                 txticon << "row " + to_string(rownb) + "\n";
                 txticon << "column " + to_string(colnb) + "\n";
-                txticon << "size undefined\n";
+                txticon << "size " + size + "\n";
                 txticon.close();
             }
             catch (const Exception &ex) {
@@ -291,9 +294,9 @@ void getIcons(const Mat& image, const vector<Rect> &rectangles, vector<Rect> &ic
 * @param icon The rectangle of the reference icon
 * @return the icon id
 */
-string getIcon(const Mat& image, const vector<Rect>& rectangles) {
+void getIcon(const Mat& image, const vector<Rect>& rectangles, Mat& icon) {
     cout << "Retrieving reference icon : " << endl;
-    Rect icon;
+    Rect iconrect;
     vector<int> lines;
     vector<int> columns;
     for (auto const &rect: rectangles) {
@@ -327,12 +330,9 @@ string getIcon(const Mat& image, const vector<Rect>& rectangles) {
     int icon_col = int(0.9 * (columns[0] - fabs(columns[0] - columns[1])));
 
     auto size = rectangles[0].size();
-    icon = Rect(Point(icon_col,lines[0]), size);
+    iconrect = Rect(Point(icon_col,lines[0]), size);
 
-    Mat temp_icon = image(icon);
-
-    cout << matchSize(temp_icon) << endl;
-    return matchIcon(temp_icon);
+    icon = image(iconrect);
 }
 
 /**

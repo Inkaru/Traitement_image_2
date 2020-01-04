@@ -25,7 +25,7 @@ void drawSquares(Mat& image, const vector<Rect>& rectangles);
 void pruneSquares(vector<vector<Point>> &squares, vector<Rect>& rectangles, int dist = 2);
 void cropRectangles(const Mat& image, vector<Rect>& rectangles, const string& scripter, const string& page);
 void getIcons(const Mat& image, const vector<Rect>& rectangles, vector<Rect>& icons);
-string getIcon(const Mat& image, const vector<Rect>& rectangles);
+void getIcon(const Mat& image, const vector<Rect>& rectangles, Mat& icon);
 void uprightImage(const Mat& image, Mat& uprImage);
 
 #endif //PROJET_OPENCV_CMAKE_SQUARES_HPP
