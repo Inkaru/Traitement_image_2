@@ -19,5 +19,6 @@ void prepIcon(Mat& icon); //vire le texte en bas
 void initIcons(vector<vector<KeyPoint>>& keypoints, vector<Mat>& descriptors, vector<string>& labels);
 string identifyIcon(Mat& img);
 string matchIcon(Mat& templ);
+string matchSize(Mat& templ);
 
 #endif /* SIFT_H_ */

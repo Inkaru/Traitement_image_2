@@ -157,6 +157,7 @@ void cropRectangles(const Mat& image, vector<Rect> &rectangles, const string& sc
     cout << "Start crop operation : " << endl;
     string cropname;
     String label = "";
+    String size = "";
     int colnb = 0;
     int rownb = 0;
 
@@ -330,6 +331,7 @@ string getIcon(const Mat& image, const vector<Rect>& rectangles) {
 
     Mat temp_icon = image(icon);
 
+    cout << matchSize(temp_icon) << endl;
     return matchIcon(temp_icon);
 }
 

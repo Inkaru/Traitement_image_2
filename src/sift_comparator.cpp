@@ -1,3 +1,4 @@
+#include <image_treatment.hpp>
 #include "sift_comparator.hpp"
 
 /**
@@ -227,8 +228,67 @@ string matchIcon(Mat& templ) {
 //
 //        waitKey();
 
+}
+
+string matchSize(Mat& ico){
+    int match_method = 4;   // TM COEFF
+
+    // icons sheet used to find match
+    Mat img = imread("../size.png");
+    Mat templ;
+
+    // crop the text of the icon
+    Rect crop(Point(0, 0.80 * ico.rows),Point(ico.cols, ico.rows));
+    templ = ico(crop);
+
+    // calculate the mean "color" of the image
+    Scalar m = mean(binarize(templ),noArray());
+
+    if(m[0] < 250) {
+        Mat img_display;
+        img.copyTo(img_display);
+
+        Mat result;
+        int result_cols = img.cols - templ.cols + 1;
+        int result_rows = img.rows - templ.rows + 1;
+        result.create(result_rows, result_cols, CV_32FC1);
+        matchTemplate(img, templ, result, match_method);
 
 
+        normalize(result, result, 0, 1, NORM_MINMAX, -1, Mat());
+        double minVal;
+        double maxVal;
+        Point minLoc;
+        Point maxLoc;
+        Point matchLoc;
+        minMaxLoc(result, &minVal, &maxVal, &minLoc, &maxLoc, Mat());
+        if (match_method == TM_SQDIFF || match_method == TM_SQDIFF_NORMED) { matchLoc = minLoc; }
+        else { matchLoc = maxLoc; }
+
+        rectangle(img_display, matchLoc, Point(matchLoc.x + templ.cols, matchLoc.y + templ.rows), Scalar::all(0), 2, 8,
+                  0);
+        rectangle(result, matchLoc, Point(matchLoc.x + templ.cols, matchLoc.y + templ.rows), Scalar::all(0), 2, 8, 0);
+
+        Point center(matchLoc.x + templ.cols / 2, 0);
+
+//        cout << center.x << endl;
+
+//        namedWindow("image_window", WINDOW_NORMAL);
+//        namedWindow("result_window", WINDOW_NORMAL);
+//        imshow("image_window", img_display);
+//        imshow("result_window", result);
+//        waitKey();
+
+        if(center.x < 450 )
+        { return "small";}
+        else if(center.x < 750 )
+        { return "medium";}
+        else
+        { return "large";}
+
+    } else {
+        return("");
+    }
 }
 
 
