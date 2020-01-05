@@ -124,6 +124,7 @@ void drawSquares(Mat &image, const vector<Rect> &rectangles) {
 
     namedWindow("Square detection", WINDOW_NORMAL);
     imshow("Square detection", image);
+    waitKey();
 }
 
 /**
@@ -170,6 +171,11 @@ void cropRectangles(const Mat& image, vector<Rect> &rectangles, const string& sc
 
         // Find the reference icon of the line and get label and size
         getIcon(image,rectline,icon);
+
+//        namedWindow("test", WINDOW_NORMAL);
+//        imshow("test", binarize(icon));
+//        waitKey();
+
         label = matchIcon(icon);
         size = matchSize(icon);
         colnb = 0;

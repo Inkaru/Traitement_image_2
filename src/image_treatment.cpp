@@ -59,11 +59,12 @@ Mat removeDrawings(const Mat& image) {
     // imshow("R",imR);
 
     Mat binary = Mat(size, CV_8UC3);
-    int thresh = 150;
+    int thresh = 160;
     int maxval = 256;
     threshold(imR, binary, thresh, maxval, THRESH_BINARY);
-    // namedWindow("Threshold image",WINDOW_NORMAL);
-    // imshow("Threshold image", binary);
+//     namedWindow("Threshold image",WINDOW_NORMAL);
+//     imshow("Threshold image", binary);
+//     waitKey();
 
     // Applying morphomath
     int operation = 2;      // 2: Opening; 3: Closing; 4: Gradient; 5: Top Hat; 6: Black Hat

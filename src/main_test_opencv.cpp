@@ -17,7 +17,7 @@ using namespace std;
 using namespace cv;
 using namespace cv::utils::fs;
 
-int main (void) {
+int main (int argc, char* argv[]) {
     //Perf
     auto timeStart = chrono::system_clock::now();
 
@@ -32,7 +32,9 @@ int main (void) {
     string iconeID;
     string scripter;
     int pageNumber;
+    int subpageNumber;
     string page;
+    string subpage;
 
     if(!exists("../generated_images")){
         cout << "Create generated_images folder" << endl;
@@ -46,16 +48,33 @@ int main (void) {
     }
 
     vector<string> folderScripters;
-    glob("../sample", "w***-scans", folderScripters, false, true);
+    int totalPage;
+    bool isTest;
+    if(argc == 2 && (string) argv[1] == "test") {
+        glob("../sample", "base-test", folderScripters, false, true);
+        totalPage = 12;
+        isTest = true;
+    } else {
+        glob("../sample", "w***-scans", folderScripters, false, true);
+        totalPage = 22;
+        isTest = false;
+    }
 
     // Loop on the scripters
     for (auto const &fScript: folderScripters) {
         cout << "Enter folder " << fScript << endl;
         scripter = fScript.substr(11, 3);
-        // loop on the 22 pages of each scripter
-        for(pageNumber=0;pageNumber<22;pageNumber++) {
-            page = (pageNumber < 10) ? "0" + to_string(pageNumber) : to_string(pageNumber);
-            filename = fScript + "/" + scripter + page + ".png";
+        // loop on the all pages of each scripter
+        for(pageNumber=0; pageNumber < totalPage; pageNumber++) {
+            if (isTest) {
+                scripter = "00" + to_string((pageNumber/2) + 1);
+                page = pageNumber%2 == 0 ? "00" : "01";
+                filename = fScript + "/s0" + to_string((pageNumber/2) + 1) + "_000" + ((pageNumber%2 == 0) ? "1" : "2") + ".png";
+            } else {
+                page = (pageNumber < 10) ? "0" + to_string(pageNumber) : to_string(pageNumber);
+                filename = fScript + "/" + scripter + page + ".png";
+            }
+
             squares.clear();
             rectangles.clear();
             referenceIcons.clear();
@@ -63,8 +82,7 @@ int main (void) {
             // CROPPING IMAGES AND ICONS
             cout << "Process image " << filename << endl;
             Mat image = imread(filename, IMREAD_COLOR);
-            if(image.empty())
-            {
+            if (image.empty()) {
                 cout << "Couldn't load " << filename << endl;
                 continue;
             }
@@ -76,7 +94,7 @@ int main (void) {
             //Remove useless squares
             pruneSquares(squares, rectangles);
             //Draw remaining squares on the image
-            //drawSquares(uprImage, rectangles);
+            // drawSquares(uprImage, rectangles);
             //imwrite( "out.png", uprImage );
             //Generate images of remaining squares
             cropRectangles(uprImage, rectangles, scripter, page);

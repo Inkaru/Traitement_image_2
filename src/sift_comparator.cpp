@@ -60,11 +60,11 @@ string matchIcon(Mat& templ) {
         return "roadBlock";
     }
 
-//        namedWindow( "image_window", WINDOW_NORMAL );
-//        namedWindow( "result_window", WINDOW_NORMAL );
-//        imshow( "image_window", img_display );
-//        imshow( "result_window", result );
-//        waitKey();
+//    namedWindow( "image_window", WINDOW_NORMAL );
+//    namedWindow( "result_window", WINDOW_NORMAL );
+//    imshow( "image_window", img_display );
+//    imshow( "result_window", result );
+//    waitKey();
 }
 
 /**
