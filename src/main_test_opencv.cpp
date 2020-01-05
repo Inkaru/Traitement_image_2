@@ -46,7 +46,7 @@ int main (void) {
     }
 
     vector<string> folderScripters;
-    glob("../sample", "w***-scans", folderScripters, false, true);
+    glob("../sample", "base-test", folderScripters, false, true);
 
     // Loop on the scripters
     for (auto const &fScript: folderScripters) {
@@ -59,7 +59,7 @@ int main (void) {
             } else {
                 page = std::to_string(pageNumber);
             }
-            filename = "../sample/w000-scans/" + scripter + page + ".png";
+            filename = "../sample/base-test/s" + page + "_00" + page + ".png";
             squares.clear();
             rectangles.clear();
             referenceIcons.clear();
