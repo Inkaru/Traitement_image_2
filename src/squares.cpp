@@ -173,7 +173,7 @@ void cropRectangles(const Mat& image, vector<Rect> &rectangles, const string& sc
         getIcon(image,rectline,icon);
 
 //        namedWindow("test", WINDOW_NORMAL);
-//        imshow("test", icon);
+//        imshow("test", binarize(icon));
 //        waitKey();
 
         label = matchIcon(icon);

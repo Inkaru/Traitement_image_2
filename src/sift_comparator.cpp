@@ -164,33 +164,33 @@ string matchIcon(Mat& templ) {
 
     // icons sheet used to find match
     Mat img = imread("../snippets3.png");
+    img = binarize(img);
+
+//    Mat img_display;
+//    img.copyTo( img_display );
+
+    Mat result;
+    int result_cols =  img.cols - templ.cols + 1;
+    int result_rows = img.rows - templ.rows + 1;
+    result.create( result_rows, result_cols, CV_32FC1 );
+    matchTemplate(img, binarize(templ), result, match_method);
 
 
-        Mat img_display;
-        img.copyTo( img_display );
+    normalize( result, result, 0, 1, NORM_MINMAX, -1, Mat() );
+    double minVal; double maxVal; Point minLoc; Point maxLoc;
+    Point matchLoc;
+    minMaxLoc( result, &minVal, &maxVal, &minLoc, &maxLoc, Mat() );
+    if( match_method  == TM_SQDIFF || match_method == TM_SQDIFF_NORMED )
+    { matchLoc = minLoc; }
+    else
+    { matchLoc = maxLoc; }
 
-        Mat result;
-        int result_cols =  img.cols - templ.cols + 1;
-        int result_rows = img.rows - templ.rows + 1;
-        result.create( result_rows, result_cols, CV_32FC1 );
-        matchTemplate(img, templ, result, match_method);
+//    rectangle( img_display, matchLoc, Point( matchLoc.x + templ.cols , matchLoc.y + templ.rows ), Scalar::all(0), 2, 8, 0 );
+//    rectangle( result, matchLoc, Point( matchLoc.x + templ.cols , matchLoc.y + templ.rows ), Scalar::all(0), 2, 8, 0 );
 
+    Point center(matchLoc.x + templ.cols/2, 0) ;
 
-        normalize( result, result, 0, 1, NORM_MINMAX, -1, Mat() );
-        double minVal; double maxVal; Point minLoc; Point maxLoc;
-        Point matchLoc;
-        minMaxLoc( result, &minVal, &maxVal, &minLoc, &maxLoc, Mat() );
-        if( match_method  == TM_SQDIFF || match_method == TM_SQDIFF_NORMED )
-        { matchLoc = minLoc; }
-        else
-        { matchLoc = maxLoc; }
-
-//        rectangle( img_display, matchLoc, Point( matchLoc.x + templ.cols , matchLoc.y + templ.rows ), Scalar::all(0), 2, 8, 0 );
-//        rectangle( result, matchLoc, Point( matchLoc.x + templ.cols , matchLoc.y + templ.rows ), Scalar::all(0), 2, 8, 0 );
-
-        Point center(matchLoc.x + templ.cols/2, 0) ;
-
-//        cout << center.x << endl;
+//    cout << center.x << endl;
 //    namedWindow( "image_window", WINDOW_NORMAL );
 //    namedWindow( "result_window", WINDOW_NORMAL );
 //    imshow( "image_window", img_display );
@@ -198,34 +198,34 @@ string matchIcon(Mat& templ) {
 //
 //    waitKey();
 
-        if(center.x < 400 )
-        { return "accident";}
-        else if(center.x < 600 )
-        { return "bomb";}
-        else if(center.x < 800 )
-        { return "car";}
-        else if(center.x < 1000 )
-        { return "casualty";}
-        else if(center.x < 1200 )
-        { return "electricity";}
-        else if(center.x < 1400 )
-        { return "fire";}
-        else if(center.x < 1600 )
-        { return "fireBrigade";}
-        else if(center.x < 1800 )
-        { return "flood";}
-        else if(center.x < 2000 )
-        { return "gas";}
-        else if(center.x < 2200 )
-        { return "injury";}
-        else if(center.x < 2400 )
-        { return "paramedics";}
-        else if(center.x < 2600 )
-        { return "person";}
-        else if(center.x < 2800 )
-        { return "police";}
-        else
-        { return "roadBlock";}
+    if(center.x < 400 )
+    { return "accident";}
+    else if(center.x < 600 )
+    { return "bomb";}
+    else if(center.x < 800 )
+    { return "car";}
+    else if(center.x < 1000 )
+    { return "casualty";}
+    else if(center.x < 1200 )
+    { return "electricity";}
+    else if(center.x < 1400 )
+    { return "fire";}
+    else if(center.x < 1600 )
+    { return "fireBrigade";}
+    else if(center.x < 1800 )
+    { return "flood";}
+    else if(center.x < 2000 )
+    { return "gas";}
+    else if(center.x < 2200 )
+    { return "injury";}
+    else if(center.x < 2400 )
+    { return "paramedics";}
+    else if(center.x < 2600 )
+    { return "person";}
+    else if(center.x < 2800 )
+    { return "police";}
+    else
+    { return "roadBlock";}
 
 
 
