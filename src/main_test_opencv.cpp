@@ -32,7 +32,9 @@ int main (void) {
     string iconeID;
     string scripter;
     int pageNumber;
+    int subpageNumber;
     string page;
+    string subpage;
 
     if(!exists("../generated_images")){
         cout << "Create generated_images folder" << endl;
@@ -53,37 +55,41 @@ int main (void) {
         cout << "Enter folder " << fScript << endl;
         scripter = fScript.substr(11, 3);
         // loop on the 22 pages of each scripter
-        for(pageNumber=0;pageNumber<22;pageNumber++) {
-            if(pageNumber<10) {
+        for(pageNumber=1;pageNumber<7;pageNumber++) {
+            if (pageNumber < 10) {
                 page = "0" + std::to_string(pageNumber);
             } else {
                 page = std::to_string(pageNumber);
             }
-            filename = "../sample/base-test/s" + page + "_00" + page + ".png";
-            squares.clear();
-            rectangles.clear();
-            referenceIcons.clear();
+            for (subpageNumber = 1; subpageNumber < 3; subpageNumber++) {
 
-            // CROPPING IMAGES AND ICONS
-            cout << "Process image " << filename << endl;
-            Mat image = imread(filename, 1);
-            if(image.empty())
-            {
-                cout << "Couldn't load " << filename << endl;
-                continue;
+                subpage = "0" + std::to_string(subpageNumber);
+
+                filename = "../sample/base-test/s" + page + "_00" + subpage + ".png";
+                squares.clear();
+                rectangles.clear();
+                referenceIcons.clear();
+
+                // CROPPING IMAGES AND ICONS
+                cout << "Process image " << filename << endl;
+                Mat image = imread(filename, 1);
+                if (image.empty()) {
+                    cout << "Couldn't load " << filename << endl;
+                    continue;
+                }
+                //Set upright if necessary
+                Mat uprImage;
+                uprightImage(image, uprImage);
+                //Detect all squares
+                findSquares(uprImage, squares, 1);
+                //Remove useless squares
+                pruneSquares(squares, rectangles);
+                //Draw remaining squares on the image
+                drawSquares(uprImage, rectangles);
+                //imwrite( "out.png", uprImage );
+                //Generate images of remaining squares
+                cropRectangles(uprImage, rectangles, scripter, page);
             }
-            //Set upright if necessary
-            Mat uprImage;
-            uprightImage(image, uprImage);
-            //Detect all squares
-            findSquares(uprImage, squares, 1);
-            //Remove useless squares
-            pruneSquares(squares, rectangles);
-            //Draw remaining squares on the image
-            //drawSquares(uprImage, rectangles);
-            //imwrite( "out.png", uprImage );
-            //Generate images of remaining squares
-            cropRectangles(uprImage, rectangles, scripter, page);
         }
     }
 

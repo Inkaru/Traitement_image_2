@@ -166,8 +166,8 @@ string matchIcon(Mat& templ) {
     Mat img = imread("../snippets3.png");
 
 
-//        Mat img_display;
-//        img.copyTo( img_display );
+        Mat img_display;
+        img.copyTo( img_display );
 
         Mat result;
         int result_cols =  img.cols - templ.cols + 1;
@@ -191,6 +191,12 @@ string matchIcon(Mat& templ) {
         Point center(matchLoc.x + templ.cols/2, 0) ;
 
 //        cout << center.x << endl;
+//    namedWindow( "image_window", WINDOW_NORMAL );
+//    namedWindow( "result_window", WINDOW_NORMAL );
+//    imshow( "image_window", img_display );
+//    imshow( "result_window", result );
+//
+//    waitKey();
 
         if(center.x < 400 )
         { return "accident";}
@@ -221,12 +227,7 @@ string matchIcon(Mat& templ) {
         else
         { return "roadBlock";}
 
-//        namedWindow( "image_window", WINDOW_NORMAL );
-//        namedWindow( "result_window", WINDOW_NORMAL );
-//        imshow( "image_window", img_display );
-//        imshow( "result_window", result );
-//
-//        waitKey();
+
 
 }
 
