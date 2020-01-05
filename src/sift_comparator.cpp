@@ -16,7 +16,7 @@ string matchIcon(Mat& templ) {
     int result_cols =  img.cols - templ.cols + 1;
     int result_rows = img.rows - templ.rows + 1;
     result.create( result_rows, result_cols, CV_32FC1 );
-    matchTemplate(img, templ, result, match_method);
+    matchTemplate(binarize(img), binarize(templ), result, match_method);
 
     normalize( result, result, 0, 1, NORM_MINMAX, -1, Mat() );
     double minVal; double maxVal; Point minLoc; Point maxLoc;
