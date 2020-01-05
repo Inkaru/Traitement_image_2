@@ -54,19 +54,15 @@ int main (void) {
         scripter = fScript.substr(11, 3);
         // loop on the 22 pages of each scripter
         for(pageNumber=0;pageNumber<22;pageNumber++) {
-            if(pageNumber<10) {
-                page = "0" + std::to_string(pageNumber);
-            } else {
-                page = std::to_string(pageNumber);
-            }
-            filename = "../sample/w000-scans/" + scripter + page + ".png";
+            page = (pageNumber < 10) ? "0" + to_string(pageNumber) : to_string(pageNumber);
+            filename = fScript + "/" + scripter + page + ".png";
             squares.clear();
             rectangles.clear();
             referenceIcons.clear();
 
             // CROPPING IMAGES AND ICONS
             cout << "Process image " << filename << endl;
-            Mat image = imread(filename, 1);
+            Mat image = imread(filename, IMREAD_COLOR);
             if(image.empty())
             {
                 cout << "Couldn't load " << filename << endl;

@@ -205,90 +205,6 @@ void cropRectangles(const Mat& image, vector<Rect> &rectangles, const string& sc
 }
 
 /**
- * @brief Extract reference icons of a given list of squares and an image
- * @param image The given image
- * @param rectangles The list of squares
- * @param icons The list of squares corresponding to the reference icons
- */
-void getIcons(const Mat& image, const vector<Rect> &rectangles, vector<Rect> &icons) {
-    cout << "Retrieving reference icons : " << endl;
-    vector<int> lines;
-    vector<int> columns;
-    for (auto const &rect: rectangles) {
-        bool linefound = false;
-        bool columnfound = false;
-        Point center = rect.tl(); //Top-left corner
-        for (auto const &line: lines) { // Line already registered -> correction by averaging
-            if (abs(line - center.y) < 25) {
-                linefound = true;
-                //std::replace(lines.begin(), lines.end(), line, (line + center.y) / 2);
-                break;
-            }
-        }
-        if (!linefound) { // New line -> add to the list
-            lines.emplace_back(center.y);
-        }
-
-        for (auto const &col: columns) {
-            if (abs(col - center.x) < 25) { // Column already registered -> correction by averaging
-                columnfound = true;
-                std::replace(columns.begin(), columns.end(), col, (col + center.x) / 2);
-                break;
-            }
-        }
-        if (!columnfound) { // New column -> add to the list
-            columns.emplace_back(center.x);
-        }
-    }
-
-    /*
-    // Debug : affichage des lignes et colonnes
-    int cols = image.cols;
-    int rows = image.rows;
-    int lineThickness = 2;
-
-    cout << "Centres lignes : " << lines.size() << endl;
-    for (auto const &line: lines) {
-        cout << line << " ";
-        line(image, Point(0,line), Point(cols,line), (0,0,255), lineThickness);
-    }
-    cout << endl;
-
-    cout << "Centres columns : " << columns.size() << endl;
-    for (auto const &col: columns) {
-        cout << col << " ";
-        line(image, Point(col,0), Point(col,rows), (0,255,255), lineThickness);
-    }
-    cout << endl;
-    */
-
-    // todo : tester si l'alignement marche sur différentes images
-    // Calcul de la position des icones
-    sort(columns.begin(), columns.end());
-    int icon_col = int(0.9 * (columns[0] - fabs(columns[0] - columns[1])));
-
-    auto size = rectangles[0].size();
-    for (auto const &l : lines){
-        icons.emplace_back(Rect(Point(icon_col,l), size));
-    }
-
-    // todo : check if icons are already sorted
-    sort(icons.begin(), icons.end(), [](Rect a, Rect b) {
-        return a.y < b.y;
-    });
-
-    cout << "Total icons : " << icons.size() << endl;
-    /*
-    // Debug : affichage des boites autour des icones
-    line(image, Point(icon_col,0), Point(icon_col,rows), (255, 0, 0), 5);
-    drawSquares(image, icons);
-    namedWindow("Lines detection", WINDOW_NORMAL);
-    imshow("Lines detection", image);
-    */
-}
-
-
-/**
 * @brief Extract reference icon of a given list of squares and an image
 * @param image The given image of the page
 * @param rectangles The list of squares
@@ -390,8 +306,8 @@ void uprightImage(const Mat &image, Mat &uprImage) {
 
         // Apply transformations to obtain upright image
         warpAffine(image, uprImage, rot, bbox.size());
-        namedWindow("Upright image", WINDOW_NORMAL);
-        imshow("Upright image", uprImage);
+        //namedWindow("Upright image", WINDOW_NORMAL);
+        //imshow("Upright image", uprImage);
     } else {
         uprImage = image;
     }
