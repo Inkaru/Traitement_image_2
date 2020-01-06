@@ -109,7 +109,16 @@ void pruneSquares(vector<vector<Point>> &rectangles, vector<Rect> &squares, int 
     }
 
     squares = squares_tmp;
+    squares_tmp.clear();
     cout << "Number of square found after pruning : " << squares.size() << endl;
+
+
+    for (auto const &sq: squares) {
+        Point pt(0.03*sq.width, 0.03*sq.height);
+        squares_tmp.emplace_back(Rect(sq.tl() + pt,sq.br() - pt));
+    }
+
+    squares = squares_tmp;
 }
 
 /**
