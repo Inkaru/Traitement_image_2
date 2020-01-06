@@ -29,6 +29,18 @@ string matchIcon(Mat& templ) {
     }
 
     Point center(matchLoc.x + templ.cols/2, 0) ;
+//
+//    Mat img_display;
+//    img.copyTo( img_display );
+//    rectangle( img_display, matchLoc, Point( matchLoc.x + templ.cols , matchLoc.y + templ.rows ), Scalar::all(0), 2, 8, 0 );
+//    rectangle( result, matchLoc, Point( matchLoc.x + templ.cols , matchLoc.y + templ.rows ), Scalar::all(0), 2, 8, 0 );
+//
+//
+//    namedWindow( "image_window", WINDOW_NORMAL );
+//    namedWindow( "result_window", WINDOW_NORMAL );
+//    imshow( "image_window", img_display );
+//    imshow( "result_window", result );
+//    waitKey();
 
     if(center.x < 400 ) {
         return "accident";
@@ -60,11 +72,7 @@ string matchIcon(Mat& templ) {
         return "roadBlock";
     }
 
-//    namedWindow( "image_window", WINDOW_NORMAL );
-//    namedWindow( "result_window", WINDOW_NORMAL );
-//    imshow( "image_window", img_display );
-//    imshow( "result_window", result );
-//    waitKey();
+
 }
 
 /**

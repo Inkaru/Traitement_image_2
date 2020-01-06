@@ -34,11 +34,11 @@ void findSquares(const Mat &image, vector<vector<Point> > &squares, int mode) {
     // Find contours and store them all as a list
     findContours(imgBin, contours, RETR_LIST, CHAIN_APPROX_SIMPLE);
     vector<Point> approx;
-    /*
-    drawContours(imgBin, contours, -1, Scalar(0, 255, 0),30, 8);
-    namedWindow("contours", WINDOW_NORMAL);
-    imshow("contours",imgBin);
-    */
+
+//    drawContours(image, contours, -1, Scalar(0, 255, 0),5, 1);
+//    namedWindow("contours", WINDOW_NORMAL);
+//    imshow("contours",image);
+//    waitKey();
 
     // Test each contour
     for (size_t i = 0; i < contours.size(); i++) {
@@ -282,18 +282,20 @@ void uprightImage(const Mat &image, Mat &uprImage) {
 //        Point2f vertices[4];
 //        rect.points(vertices);
 //        for(int i = 0; i<4; i++) {
-//            line(image, vertices[i], vertices[(i+1)%4], Scalar(0, 255, 0), 3, LINE_AA);
+//            line(image, vertices[i], vertices[(i+1)%4], Scalar(0, 255, 0), 5, LINE_AA);
 //        }
 //    }
 //    namedWindow("Rotated square detection", WINDOW_NORMAL);
 //    imshow("Rotated square detection", image);
+//    waitKey();
 
     double angle = 90.0;
     double isUpright = true;
-    if(squares.size() > 0) {
+    if(!squares.empty()) {
         double ang = squares[0].angle;
         if(fabs(ang) > 1 && fabs(fabs(ang) - 90) > 1){
             isUpright = false;
+//            cout << ang << endl ;
             angle += ang;
         }
     }
@@ -311,9 +313,11 @@ void uprightImage(const Mat &image, Mat &uprImage) {
         rot.at<double>(1, 2) += bbox.height / 2.0 - image.rows / 2.0;
 
         // Apply transformations to obtain upright image
-        warpAffine(image, uprImage, rot, bbox.size());
-        //namedWindow("Upright image", WINDOW_NORMAL);
-        //imshow("Upright image", uprImage);
+//        warpAffine(image, uprImage, rot, bbox.size());
+//        namedWindow("Upright image", WINDOW_NORMAL);
+//        imshow("Upright image", uprImage);
+//        waitKey();
+
     } else {
         uprImage = image;
     }
