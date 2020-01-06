@@ -64,6 +64,7 @@ int main (int argc, char* argv[]) {
     for (auto const &fScript: folderScripters) {
         cout << "Enter folder " << fScript << endl;
         scripter = fScript.substr(11, 3);
+        scripter = "013";
         // loop on the all pages of each scripter
         for(pageNumber=0; pageNumber < totalPage; pageNumber++) {
             if (isTest) {
@@ -86,18 +87,23 @@ int main (int argc, char* argv[]) {
                 cout << "Couldn't load " << filename << endl;
                 continue;
             }
-            //Set upright if necessary
-            Mat uprImage;
-            uprightImage(image, uprImage);
-            //Detect all squares
-            findSquares(uprImage, squares, 1);
-            //Remove useless squares
-            pruneSquares(squares, rectangles);
-            //Draw remaining squares on the image
-            // drawSquares(uprImage, rectangles);
-            //imwrite( "out.png", uprImage );
-            //Generate images of remaining squares
-            cropRectangles(uprImage, rectangles, scripter, page);
+            try {
+                //Set upright if necessary
+                Mat uprImage;
+                uprightImage(image, uprImage);
+                //Detect all squares
+                findSquares(uprImage, squares, 1);
+                //Remove useless squares
+                pruneSquares(squares, rectangles);
+                //Draw remaining squares on the image
+//             drawSquares(uprImage, rectangles);
+                //imwrite( "out.png", uprImage );
+                //Generate images of remaining squares
+                cropRectangles(uprImage, rectangles, scripter, page);
+            } catch (Exception e){
+                cout << "Failed on " << filename << endl;
+                continue;
+            }
         }
     }
 
