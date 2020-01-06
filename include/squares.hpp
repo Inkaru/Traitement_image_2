@@ -13,7 +13,7 @@
 #include <fstream>
 
 #include "image_treatment.hpp"
-#include "sift_comparator.hpp"
+#include "pattern_matcher.hpp"
 
 using namespace cv;
 using namespace std;

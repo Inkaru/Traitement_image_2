@@ -8,7 +8,7 @@
 
 #include <iostream>
 #include "squares.hpp"
-#include "sift_comparator.hpp"
+#include "pattern_matcher.hpp"
 #include "opencv2/imgproc.hpp"
 #include "opencv2/highgui.hpp"
 #include "opencv2/core/utils/filesystem.hpp"

@@ -1,5 +1,5 @@
 #include <image_treatment.hpp>
-#include "sift_comparator.hpp"
+#include "pattern_matcher.hpp"
 
 /**
  * @brief Return the name of a given icon by template matching
