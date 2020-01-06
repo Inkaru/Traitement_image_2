@@ -73,8 +73,8 @@ Mat removeDrawings(const Mat& image) {
     Mat morphoMaths = Mat(size, CV_8UC3);
     Mat element = getStructuringElement(morph_elem, Size(2 * morph_size + 1, 2 * morph_size + 1), Point(morph_size, morph_size));
     morphologyEx(binary, morphoMaths, operation, element);
-    // namedWindow("Morpho image",WINDOW_NORMAL);
-    // imshow("Morpho image", morphoMaths);
+//     namedWindow("Morpho image",WINDOW_NORMAL);
+//     imshow("Morpho image", morphoMaths);
 
     return morphoMaths;
 }

@@ -35,10 +35,10 @@ void findSquares(const Mat &image, vector<vector<Point> > &squares, int mode) {
     findContours(imgBin, contours, RETR_LIST, CHAIN_APPROX_SIMPLE);
     vector<Point> approx;
 
-    drawContours(image, contours, -1, Scalar(0, 255, 0),5, 1);
-    namedWindow("contours", WINDOW_NORMAL);
-    imshow("contours",image);
-    waitKey();
+//    drawContours(image, contours, -1, Scalar(0, 255, 0),5, 1);
+//    namedWindow("contours", WINDOW_NORMAL);
+//    imshow("contours",image);
+//    waitKey();
 
     // Test each contour
     for (size_t i = 0; i < contours.size(); i++) {
@@ -72,6 +72,7 @@ void findSquares(const Mat &image, vector<vector<Point> > &squares, int mode) {
  * @param dist Unused
  */
 void pruneSquares(vector<vector<Point>> &rectangles, vector<Rect> &squares, int dist) {
+    cout << "Number of square found so far : " << rectangles.size() << endl;
     vector<Rect> squares_tmp;
     for (auto const &rec: rectangles) {
         // Remove rectangles
@@ -84,12 +85,12 @@ void pruneSquares(vector<vector<Point>> &rectangles, vector<Rect> &squares, int 
     // Average height used for prunning small squares
     unsigned long height = 0.0;
     for (auto const &rec: squares_tmp) {
-        height += rec.size().height;
+        if(rec.size().height > height ){
+            height = rec.size().height;
+        }
     }
-    height /= squares_tmp.size();
 
     squares = squares_tmp;
-    cout << "Number of square found so far : " << rectangles.size() << endl;
     squares_tmp.clear();
 
     // Remove duplicate squares
@@ -103,14 +104,15 @@ void pruneSquares(vector<vector<Point>> &rectangles, vector<Rect> &squares, int 
                 break;
             }
         }
-        if (!found && fabs(sq1.size().height - height) < 0.15 * height) { //Square not selected if its height is smaller than 15% of average heigth
+
+        if (!found && fabs(height - sq1.size().height) < 0.30 * height) { //Square not selected if its height is smaller than 15% of average heigth
             squares_tmp.push_back(sq1);
         }
     }
 
     squares = squares_tmp;
     squares_tmp.clear();
-    cout << "Number of square found after pruning : " << squares.size() << endl;
+    cout << "Number of square found after pruning duplicates and small ones : " << squares.size() << endl;
 
 
     for (auto const &sq: squares) {
@@ -173,49 +175,55 @@ void cropRectangles(const Mat& image, vector<Rect> &rectangles, const string& sc
     int rownb = 0;
 
     for (auto &rectline: splitted) {
-        // Sort rectangles by their x coordinates (for each line)
-        sort(rectline.begin(), rectline.end(), [](Rect a, Rect b) {
-            return a.x < b.x;
-        });
+        try {
+            // Sort rectangles by their x coordinates (for each line)
+            sort(rectline.begin(), rectline.end(), [](Rect a, Rect b) {
+                return a.x < b.x;
+            });
 
-        // Find the reference icon of the line and get label and size
-        getIcon(image,rectline,icon);
+            // Find the reference icon of the line and get label and size
+            getIcon(image,rectline,icon);
 
 //        namedWindow("test", WINDOW_NORMAL);
 //        imshow("test", binarize(icon));
 //        waitKey();
 
-        label = matchIcon(icon);
-        size = matchSize(icon);
-        colnb = 0;
-        for (auto const &rect: rectline) {
-            Mat crop = image(rect);
-            bool result = false;
-            cropname = "../generated_images/" + label + "_" + scripter + "_" + page + "_" + to_string(rownb) + "_" + to_string(colnb);
-            try {
-                // label_scripter_page_column_row.png
-                result = imwrite(cropname + ".png", crop);
-                ofstream txticon(cropname + ".txt");
-                txticon << "label " + label + "\n";
-                txticon << "form " + scripter + page + "\n";
-                txticon << "scripter " + scripter + "\n";
-                txticon << "page " + page + "\n";
-                txticon << "row " + to_string(rownb) + "\n";
-                txticon << "column " + to_string(colnb) + "\n";
-                txticon << "size " + size + "\n";
-                txticon.close();
+            label = matchIcon(icon);
+            size = matchSize(icon);
+            colnb = 0;
+            for (auto const &rect: rectline) {
+                Mat crop = image(rect);
+                bool result = false;
+                cropname = "../generated_images/" + label + "_" + scripter + "_" + page + "_" + to_string(rownb) + "_" + to_string(colnb);
+                try {
+                    // label_scripter_page_column_row.png
+                    result = imwrite(cropname + ".png", crop);
+                    ofstream txticon(cropname + ".txt");
+                    txticon << "label " + label + "\n";
+                    txticon << "form " + scripter + page + "\n";
+                    txticon << "scripter " + scripter + "\n";
+                    txticon << "page " + page + "\n";
+                    txticon << "row " + to_string(rownb) + "\n";
+                    txticon << "column " + to_string(colnb) + "\n";
+                    txticon << "size " + size + "\n";
+                    txticon.close();
+                }
+                catch (const Exception &ex) {
+                    fprintf(stderr, "Exception converting image to PNG format: %s\n", ex.what());
+                }
+                if (result){
+                    cout << "Saved PNG file n°" << cropname << endl;
+                } else {
+                    cout << "ERROR: Can't save PNG file. (Image n°" << cropname << ")" << endl;
+                }
+                colnb++;
             }
-            catch (const Exception &ex) {
-                fprintf(stderr, "Exception converting image to PNG format: %s\n", ex.what());
-            }
-            if (result){
-                cout << "Saved PNG file n°" << cropname << endl;
-            } else {
-                cout << "ERROR: Can't save PNG file. (Image n°" << cropname << ")" << endl;
-            }
-            colnb++;
+            rownb++;
+        } catch(Exception e){
+            cout << "Extraction failed " << cropname << endl;
+            rownb++;
+            continue;
         }
-        rownb++;
     }
 }
 
