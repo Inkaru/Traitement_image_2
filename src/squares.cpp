@@ -35,10 +35,10 @@ void findSquares(const Mat &image, vector<vector<Point> > &squares, int mode) {
     findContours(imgBin, contours, RETR_LIST, CHAIN_APPROX_SIMPLE);
     vector<Point> approx;
 
-//    drawContours(image, contours, -1, Scalar(0, 255, 0),5, 1);
-//    namedWindow("contours", WINDOW_NORMAL);
-//    imshow("contours",image);
-//    waitKey();
+    drawContours(image, contours, -1, Scalar(0, 255, 0),5, 1);
+    namedWindow("contours", WINDOW_NORMAL);
+    imshow("contours",image);
+    waitKey();
 
     // Test each contour
     for (size_t i = 0; i < contours.size(); i++) {
@@ -109,7 +109,16 @@ void pruneSquares(vector<vector<Point>> &rectangles, vector<Rect> &squares, int 
     }
 
     squares = squares_tmp;
+    squares_tmp.clear();
     cout << "Number of square found after pruning : " << squares.size() << endl;
+
+
+    for (auto const &sq: squares) {
+        Point pt(0.025*sq.width, 0.025*sq.height);
+        squares_tmp.emplace_back(Rect(sq.tl() + pt,sq.br() - pt));
+    }
+
+    squares = squares_tmp;
 }
 
 /**
@@ -265,7 +274,7 @@ void getIcon(const Mat& image, const vector<Rect>& rectangles, Mat& icon) {
 void uprightImage(const Mat &image, Mat &uprImage) {
     // Find rectangles in the image
     vector<vector<Point>> rectangles;
-    findSquares(image, rectangles, 0);
+    findSquares(image, rectangles, 1);
     // Convert to rotatedRects
     vector<RotatedRect> squares;
 
@@ -313,7 +322,7 @@ void uprightImage(const Mat &image, Mat &uprImage) {
         rot.at<double>(1, 2) += bbox.height / 2.0 - image.rows / 2.0;
 
         // Apply transformations to obtain upright image
-//        warpAffine(image, uprImage, rot, bbox.size());
+        warpAffine(image, uprImage, rot, bbox.size());
 //        namedWindow("Upright image", WINDOW_NORMAL);
 //        imshow("Upright image", uprImage);
 //        waitKey();
