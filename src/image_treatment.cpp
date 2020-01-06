@@ -62,19 +62,20 @@ Mat removeDrawings(const Mat& image) {
     int thresh = 160;
     int maxval = 256;
     threshold(imR, binary, thresh, maxval, THRESH_BINARY);
-//     namedWindow("Threshold image",WINDOW_NORMAL);
-//     imshow("Threshold image", binary);
+     namedWindow("Threshold image",WINDOW_NORMAL);
+     imshow("Threshold image", binary);
 //     waitKey();
 
     // Applying morphomath
-    int operation = 2;      // 2: Opening; 3: Closing; 4: Gradient; 5: Top Hat; 6: Black Hat
+    int operation = 2;      // 2: Closing;
     int morph_elem = 0;     // 0: Rect - 1: Cross - 2: Ellipse
     int morph_size = 5;     // Kernel size : 2n + 1
     Mat morphoMaths = Mat(size, CV_8UC3);
     Mat element = getStructuringElement(morph_elem, Size(2 * morph_size + 1, 2 * morph_size + 1), Point(morph_size, morph_size));
     morphologyEx(binary, morphoMaths, operation, element);
-//     namedWindow("Morpho image",WINDOW_NORMAL);
-//     imshow("Morpho image", morphoMaths);
+     namedWindow("Morpho image",WINDOW_NORMAL);
+     imshow("Morpho image", morphoMaths);
+     waitKey();
 
     return morphoMaths;
 }
